@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { createI18n } from '../i18n';
+import { I18nProvider } from '../i18n/I18nContext';
 import { appMessages } from './messages';
 import { LanguageSwitch } from './LanguageSwitch';
 
@@ -9,7 +10,9 @@ const noop = () => undefined;
 describe('LanguageSwitch', () => {
   it('shows DE and EN as a labelled group with the current language pressed', () => {
     const html = renderToStaticMarkup(
-      <LanguageSwitch t={createI18n('de').t} language="de" onChange={noop} />,
+      <I18nProvider language="de">
+        <LanguageSwitch language="de" onChange={noop} />
+      </I18nProvider>,
     );
     expect(html).toContain('role="group"');
     expect(html).toContain('aria-label="Sprache"');
@@ -19,7 +22,9 @@ describe('LanguageSwitch', () => {
 
   it('names each language in that language, so screen readers pronounce it correctly', () => {
     const html = renderToStaticMarkup(
-      <LanguageSwitch t={createI18n('en').t} language="en" onChange={noop} />,
+      <I18nProvider language="en">
+        <LanguageSwitch language="en" onChange={noop} />
+      </I18nProvider>,
     );
     expect(html).toContain('aria-label="Language"');
     expect(html).toContain('aria-label="Deutsch (DE)"');

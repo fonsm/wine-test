@@ -1,9 +1,9 @@
 import type { TFunction } from 'i18next';
 import { useId } from 'react';
+import { useT } from '../i18n/I18nContext';
 import type { DesignElement } from '../model/schema';
 
 interface LayersPanelProps {
-  t: TFunction;
   /** Stored back to front; shown front first, like most design tools. */
   elements: readonly DesignElement[];
   selectedId: string | null;
@@ -26,7 +26,8 @@ export function layerName(t: TFunction, element: DesignElement): string {
   }
 }
 
-export function LayersPanel({ t, elements, selectedId, onSelect }: LayersPanelProps) {
+export function LayersPanel({ elements, selectedId, onSelect }: LayersPanelProps) {
+  const t = useT();
   const headingId = useId();
   const frontFirst = [...elements].reverse();
   return (

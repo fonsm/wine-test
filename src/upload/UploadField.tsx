@@ -1,5 +1,5 @@
-import type { TFunction } from 'i18next';
 import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
+import { useT } from '../i18n/I18nContext';
 import type { LabelSize } from '../print/geometry';
 import { formatIssue } from './format';
 import { MAX_FILE_SIZE_MB } from './limits';
@@ -24,14 +24,14 @@ type State =
     };
 
 interface UploadFieldProps {
-  t: TFunction;
   /** Called with the cleaned, metadata-free image. */
   onImage?: (image: CleanImage) => void;
   /** The design's label size, for the low-resolution warning. */
   labelSize?: LabelSize;
 }
 
-export function UploadField({ t, onImage, labelSize }: UploadFieldProps) {
+export function UploadField({ onImage, labelSize }: UploadFieldProps) {
+  const t = useT();
   const inputId = useId();
   const hintId = useId();
   const [state, setState] = useState<State>({ kind: 'idle' });
