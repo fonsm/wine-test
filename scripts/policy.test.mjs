@@ -45,6 +45,14 @@ describe('checkLicense', () => {
     expect(checkLicense('lightningcss', 'GPL-3.0-only').ok).toBe(false);
     expect(checkLicense('not-lightningcss', 'MPL-2.0').ok).toBe(false);
   });
+
+  it('allows the documented axe-core exception (accessibility tests), only for MPL-2.0', () => {
+    expect(checkLicense('axe-core', 'MPL-2.0').ok).toBe(true);
+    expect(checkLicense('@axe-core/playwright', 'MPL-2.0').ok).toBe(true);
+    expect(checkLicense('axe-core', 'GPL-3.0-only').ok).toBe(false);
+    expect(checkLicense('axe-core-extra', 'MPL-2.0').ok).toBe(false);
+    expect(checkLicense('@axe-core/react', 'MPL-2.0').ok).toBe(false);
+  });
 });
 
 describe('findNonStaticFiles', () => {

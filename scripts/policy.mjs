@@ -28,6 +28,12 @@ export const LICENSE_EXCEPTIONS = [
     reason:
       'Required build-time dependency of Vite (the CSS minifier). Used unmodified, never shipped in dist/.',
   },
+  {
+    name: /^(axe-core|@axe-core\/playwright)$/,
+    license: 'MPL-2.0',
+    reason:
+      'Accessibility checks in the Playwright tests (approved by the project owner). Dev-only, used unmodified, never shipped in dist/.',
+  },
 ];
 
 const SPDX_ID = /^[A-Za-z0-9.+-]+$/;
