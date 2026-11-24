@@ -13,7 +13,7 @@ import { createViewer, supportsWebGL2, type Viewer } from './viewer';
 import { labelWrap } from './wrap';
 
 /** Edits are collected for this long, then drawn at once (well within the 300 ms target). */
-const UPDATE_DELAY_MS = 80;
+const UPDATE_DELAY_MS = 30;
 /** Longer side of the label texture: about 220 dpi on a 90 × 120 mm label. */
 const LABEL_TEXTURE_MAX_PX = 1024;
 /** Resolution of the flat fallback picture, in pixels per millimetre of bottle. */
