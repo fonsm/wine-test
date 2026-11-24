@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useT } from '../i18n/I18nContext';
 import type { Design } from '../model/schema';
 import { LabelRenderer, prepareDesign } from '../render/renderLabel';
-import { bottleShape } from './bottles';
+import { bottleShape } from '../templates/bottles';
 import { drawFlatPreview } from './flat';
 import { chooseQuality } from './performance';
 import { PreviewSection, type PreviewMode } from './PreviewSection';

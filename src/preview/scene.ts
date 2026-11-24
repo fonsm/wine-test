@@ -17,7 +17,7 @@ import {
   Vector2,
 } from 'three';
 import type { LabelSize } from '../print/geometry';
-import { radiusAt, type BottleShape } from './bottles';
+import { radiusAt, type BottleShape } from '../templates/bottles';
 import { labelWrap } from './wrap';
 
 /** The rendered label: a canvas the label renderer draws into. */

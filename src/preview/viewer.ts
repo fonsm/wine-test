@@ -11,7 +11,7 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { LabelSize } from '../print/geometry';
-import type { BottleShape } from './bottles';
+import type { BottleShape } from '../templates/bottles';
 import { createBottleScene, type LabelImage } from './scene';
 
 const FIELD_OF_VIEW_DEG = 30;

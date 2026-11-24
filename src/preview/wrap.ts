@@ -1,7 +1,7 @@
 // How the flat label wraps around the bottle: as a cylinder segment just outside the glass whose
 // arc length equals the label width, so the print keeps its proportions on the curved surface.
 import type { LabelSize } from '../print/geometry';
-import type { BottleShape } from './bottles';
+import type { BottleShape } from '../templates/bottles';
 
 /** Distance between glass and label surface, so they do not flicker into each other. */
 export const LABEL_GAP_MM = 0.3;
