@@ -100,7 +100,7 @@ export function UploadField({ t, onImage }: UploadFieldProps) {
             data-testid="upload-preview"
             src={state.previewUrl}
             alt={t('upload:previewAlt')}
-            style={{ maxWidth: '100%', maxHeight: '20rem' }}
+            className="upload-preview"
           />
         </>
       )}

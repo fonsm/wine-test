@@ -72,6 +72,17 @@ These were decided without confirmed requirements and can be changed:
   - Maximum design file size: **50 MB**. Further limits: 500 elements, 100 images, 5000 characters per text, coordinates within ±1000 mm.
   - Default template id `blank` and bottle id `bordeaux-750`. They are placeholders until templates and bottles exist.
   - The saved file is called `wine-label-design.json`.
+- **Editor** (`src/editor`):
+  - **Fonts** (decided by the project owner): four bundled OFL fonts, Playfair Display (default), EB Garamond, Inter and Great Vibes. They are TTF files from the Google Fonts repository (upstream publishes no WOFF2; TTF can also be embedded in the PDF export later). They add about 4.4 MB to the build, but the browser only downloads a font when a text uses it. Designs that name another font (for example `serif`) still open and use a generic fallback.
+  - The design is the editor's only document state. Selection is view state and is not saved or undone.
+  - **Undo/redo**: up to 100 steps. Each drag, resize, rotation, add, delete and layer change is one step. Typing into one field (text, number) and consecutive arrow-key nudges are merged into one step. Opening a design file starts a fresh history.
+  - **New text**: 18 pt, centred, 80 % of the label width. **New images** are fitted into 80 % of the label, centred, keeping their aspect ratio. An image added twice is stored once.
+  - **Snapping**: to bleed, trim edges, safe margin, label centre and to edges and centres of other unrotated elements, within 6 screen pixels. Rotated elements snap only their centre. Rotation snaps to 0°, 90°, 180° and 270°.
+  - **Keyboard**: arrow keys move the selected element by 1 mm (Shift: 10 mm), Delete/Backspace removes it, Escape deselects, Ctrl/Cmd+Z undoes, Ctrl/Cmd+Shift+Z or Ctrl+Y redoes. Every property can also be edited with form fields, and elements are selected through the layer list.
+  - **Touch**: drag, resize and rotate with the finger. Handles are larger on touch screens. Touching an empty label area still scrolls and zooms the page.
+  - **Layout**: one column below 900 px width, canvas with a side panel above.
+  - Shapes from design files are shown, but there is no tool to add shapes yet.
+  - The JavaScript bundle is about 730 kB (225 kB gzipped), mostly Konva. Vite warns about the size; code splitting can come later.
 - **UI language** follows the browser language: German for any `de` locale, otherwise English. There is no language switch yet.
 - **German texts use the formal "Sie".**
 - **Playwright runs Chromium only** for now. Firefox and WebKit can be added later.
