@@ -3,6 +3,7 @@ import { LanguageSwitch } from './app/LanguageSwitch';
 import { Editor } from './editor/Editor';
 import { useEditorState } from './editor/useEditorState';
 import { DEFAULT_LANGUAGE, type Language } from './i18n';
+import { applyDocumentLanguage } from './i18n/document';
 import { I18nProvider, useT } from './i18n/I18nContext';
 import { browserStorage, storeLanguage } from './i18n/storage';
 import { LazyBottlePreview } from './preview/LazyBottlePreview';
@@ -19,7 +20,7 @@ export function App({ language: initial = DEFAULT_LANGUAGE }: AppProps) {
 
   function changeLanguage(next: Language) {
     setLanguage(next);
-    document.documentElement.lang = next;
+    applyDocumentLanguage(document, next);
     storeLanguage(browserStorage(), next);
   }
 
