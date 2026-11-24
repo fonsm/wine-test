@@ -5,6 +5,7 @@ import { useEditorState } from './editor/useEditorState';
 import { DEFAULT_LANGUAGE, type Language } from './i18n';
 import { I18nProvider, useT } from './i18n/I18nContext';
 import { browserStorage, storeLanguage } from './i18n/storage';
+import { LazyBottlePreview } from './preview/LazyBottlePreview';
 
 interface AppProps {
   /** Initial language: the stored choice or the browser language (see main.tsx). */
@@ -26,7 +27,11 @@ export function App({ language: initial = DEFAULT_LANGUAGE }: AppProps) {
     <I18nProvider language={language}>
       <main>
         <Header language={language} onLanguageChange={changeLanguage} />
-        <Editor state={editorState} dispatch={dispatch} />
+        <Editor
+          state={editorState}
+          dispatch={dispatch}
+          preview={<LazyBottlePreview design={editorState.history.present} />}
+        />
       </main>
     </I18nProvider>
   );

@@ -1,4 +1,4 @@
-import { useId, useRef, type KeyboardEvent } from 'react';
+import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { DEFAULT_FONT_FAMILY } from '../fonts/fonts';
 import { useT } from '../i18n/I18nContext';
 import { DesignFileControls } from '../model/DesignFileControls';
@@ -36,9 +36,11 @@ interface EditorProps {
   /** Document state from useEditorState, owned by the app. */
   state: EditorState;
   dispatch: EditorDispatch;
+  /** Shown beside the canvas, for example the bottle preview. */
+  preview?: ReactNode;
 }
 
-export function Editor({ state, dispatch }: EditorProps) {
+export function Editor({ state, dispatch, preview }: EditorProps) {
   const t = useT();
   const design = state.history.present;
   const selected = selectedElement(state);
@@ -157,6 +159,8 @@ export function Editor({ state, dispatch }: EditorProps) {
           {t('editor:canvasHelp')}
         </p>
       </div>
+
+      {preview && <div className="editor-preview">{preview}</div>}
 
       <div className="editor-panel">
         <LabelSizePanel

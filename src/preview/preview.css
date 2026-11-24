@@ -1,0 +1,58 @@
+/* Bottle preview. The stage keeps the bottle's proportions; the canvas fills it. */
+
+.bottle-preview {
+  display: grid;
+  gap: 8px;
+}
+
+.bottle-preview h2 {
+  margin: 0;
+}
+
+.bottle-preview-stage {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 2 / 3;
+  margin: 0 auto;
+  border-radius: var(--radius);
+  background: radial-gradient(circle at 50% 40%, #ffffff 0%, var(--color-bg) 75%);
+}
+
+.bottle-preview-stage[hidden],
+.bottle-preview-flat[hidden] {
+  display: none;
+}
+
+.bottle-preview-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.bottle-preview-canvas:active {
+  cursor: grabbing;
+}
+
+.bottle-preview-flat {
+  display: block;
+  height: 340px;
+  max-width: 100%;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.bottle-preview-message {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: #fff4e5;
+  color: var(--color-text);
+}
+
+.bottle-preview-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
