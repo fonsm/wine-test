@@ -11,5 +11,8 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.mjs'],
     environment: 'node',
+    // Load CSS files for real (Vitest skips them by default), so `?raw` imports give the
+    // stylesheet text, for the contrast tests.
+    css: { include: [/.+/] },
   },
 });
