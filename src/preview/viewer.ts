@@ -29,9 +29,6 @@ const MAX_ANISOTROPY = 8;
 
 export interface Viewer {
   setLabel(image: LabelImage, size: LabelSize): void;
-  /** Turns the bottle (camera) by an angle in radians; positive turns the bottle to the left. */
-  turn(radians: number): void;
-  frontView(): void;
   /** Renders n frames and returns how long each took, GPU work included (milliseconds). */
   measureFrames(n: number): number[];
   dispose(): void;
@@ -126,17 +123,6 @@ export function createViewer(
   return {
     setLabel(image, size) {
       view.setLabel(image, size);
-      requestRender();
-    },
-    turn(radians) {
-      const offset = new Spherical().setFromVector3(camera.position.clone().sub(target));
-      placeCamera(offset.theta + radians, offset.phi);
-      controls.update();
-      requestRender();
-    },
-    frontView() {
-      placeCamera(0, START_POLAR);
-      controls.update();
       requestRender();
     },
     measureFrames(n) {

@@ -20,8 +20,6 @@ const LABEL_TEXTURE_MAX_PX = 1024;
 const FLAT_PX_PER_MM = 3;
 /** Frames rendered to decide whether this device is fast enough for 3D. */
 const MEASURED_FRAMES = 5;
-/** One button press turns the bottle by 45°. */
-const TURN_STEP = Math.PI / 4;
 
 type FallbackReason = 'webgl' | 'slow';
 
@@ -142,19 +140,6 @@ export default function BottlePreview({ design }: { design: Design }) {
         aria-label={t('preview:flatLabel')}
         hidden={mode !== 'flat'}
       />
-      {mode === '3d' && (
-        <div className="bottle-preview-controls">
-          <button type="button" onClick={() => viewerRef.current?.turn(TURN_STEP)}>
-            {t('preview:turnLeft')}
-          </button>
-          <button type="button" onClick={() => viewerRef.current?.frontView()}>
-            {t('preview:frontView')}
-          </button>
-          <button type="button" onClick={() => viewerRef.current?.turn(-TURN_STEP)}>
-            {t('preview:turnRight')}
-          </button>
-        </div>
-      )}
     </PreviewSection>
   );
 }

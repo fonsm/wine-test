@@ -125,28 +125,32 @@ for (const { name, use } of viewports) {
 test.describe('3D preview controls', () => {
   test.use({ viewport: { width: 1280, height: 900 } });
 
-  test('turns the bottle by dragging and with the buttons', async ({ page }, testInfo) => {
+  test('turns the bottle by dragging, and back again', async ({ page }, testInfo) => {
     await page.goto('/');
     await expect3d(page);
     const stage = preview(page).getByRole('img', { name: t('preview:canvasLabel') });
-    const frontView = page.getByRole('button', { name: t('preview:frontView') });
-    await frontView.click();
     const front = await settledScreenshot(stage);
     await attach(stage, testInfo, 'preview-front');
 
     const box = await stage.boundingBox();
     if (!box) throw new Error('preview not visible');
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width * 0.9, box.y + box.height / 2, { steps: 10 });
-    await page.mouse.up();
+    const y = box.y + box.height / 2;
+    const drag = async (fromX: number, toX: number) => {
+      await page.mouse.move(fromX, y);
+      await page.mouse.down();
+      await page.mouse.move(toX, y, { steps: 10 });
+      await page.mouse.up();
+    };
+    const middle = box.x + box.width / 2;
+    const right = box.x + box.width * 0.9;
+
+    await drag(middle, right);
     await expect.poll(async () => sameBytes(await screenshotBytes(stage), front)).toBe(false);
     await attach(stage, testInfo, 'preview-turned');
 
-    await frontView.click();
+    // Dragging back the same distance shows the front again.
+    await drag(right, middle);
     await expect.poll(async () => sameBytes(await screenshotBytes(stage), front)).toBe(true);
-    await page.getByRole('button', { name: t('preview:turnLeft') }).click();
-    await expect.poll(async () => sameBytes(await screenshotBytes(stage), front)).toBe(false);
   });
 
   test('loads Three.js separately, after the editor, from the same origin only', async ({

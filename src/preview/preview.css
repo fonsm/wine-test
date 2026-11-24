@@ -50,9 +50,3 @@
   background: #fff4e5;
   color: var(--color-text);
 }
-
-.bottle-preview-controls {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
