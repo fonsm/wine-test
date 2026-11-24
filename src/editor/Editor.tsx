@@ -8,6 +8,7 @@ import type { CleanImage } from '../upload/types';
 import './editor.css';
 import { blobToDataUrl, newId } from './ids';
 import { LabelCanvas } from './LabelCanvas';
+import { LabelSizePanel } from './LabelSizePanel';
 import { LayersPanel } from './LayersPanel';
 import type { ElementPatch } from './operations';
 import { PropertiesPanel } from './PropertiesPanel';
@@ -132,7 +133,7 @@ export function Editor({ t, initialDesign }: EditorProps) {
       </div>
 
       <div className="editor-upload">
-        <UploadField t={t} onImage={(image) => void addImage(image)} />
+        <UploadField t={t} labelSize={design.labelSize} onImage={(image) => void addImage(image)} />
       </div>
 
       <div className="editor-stage">
@@ -159,6 +160,13 @@ export function Editor({ t, initialDesign }: EditorProps) {
       </div>
 
       <div className="editor-panel">
+        <LabelSizePanel
+          t={t}
+          size={design.labelSize}
+          onChange={(size, merge) => {
+            dispatch({ type: 'resizeLabel', size, merge });
+          }}
+        />
         <PropertiesPanel
           t={t}
           element={selected}

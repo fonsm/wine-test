@@ -1,7 +1,8 @@
 import type { TFunction } from 'i18next';
-import { useId, useState, type Ref } from 'react';
+import { useId, type Ref } from 'react';
 import { FONTS } from '../fonts/fonts';
 import type { DesignElement, TextElement } from '../model/schema';
+import { NumberField } from './NumberField';
 import type { ElementPatch, LayerDirection } from './operations';
 
 interface PropertiesPanelProps {
@@ -12,8 +13,6 @@ interface PropertiesPanelProps {
   onReorder: (direction: LayerDirection) => void;
   textFieldRef: Ref<HTMLTextAreaElement>;
 }
-
-const format = (value: number) => String(Math.round(value * 100) / 100);
 
 export function PropertiesPanel({
   t,
@@ -209,48 +208,5 @@ function TextFields({
         </label>
       </div>
     </>
-  );
-}
-
-/**
- * A number input that commits every valid value while typing. Incomplete input ("", "-", "1.")
- * is kept as a draft until it is a number; on blur the field shows the model value again.
- */
-function NumberField({
-  label,
-  value,
-  step,
-  min,
-  onCommit,
-}: {
-  label: string;
-  value: number;
-  step: number;
-  min?: number;
-  onCommit: (value: number) => void;
-}) {
-  const id = useId();
-  const [draft, setDraft] = useState<string | null>(null);
-  return (
-    <div className="editor-field">
-      <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        type="number"
-        inputMode="decimal"
-        step={step}
-        min={min}
-        value={draft ?? format(value)}
-        onChange={(event) => {
-          const text = event.target.value;
-          setDraft(text);
-          const number = Number(text);
-          if (text.trim() !== '' && Number.isFinite(number)) onCommit(number);
-        }}
-        onBlur={() => {
-          setDraft(null);
-        }}
-      />
-    </div>
   );
 }

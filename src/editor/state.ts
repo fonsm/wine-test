@@ -1,6 +1,7 @@
 // Editor state: the design (with undo history) is the only document state. The selection is
 // view state and is never saved or put on the undo stack.
 import { designSchema, type Design, type DesignElement } from '../model/schema';
+import type { LabelSize } from '../print/geometry';
 import {
   commit,
   createHistory,
@@ -15,6 +16,7 @@ import {
   addTextElement,
   deleteElement,
   reorderElement,
+  resizeLabel,
   updateElement,
   type ElementPatch,
   type LayerDirection,
@@ -39,6 +41,8 @@ export type EditorAction =
   | { type: 'update'; id: string; patch: ElementPatch; merge?: boolean }
   | { type: 'delete'; id: string }
   | { type: 'reorder'; id: string; direction: LayerDirection }
+  /** `merge`: typing a size into the fields becomes one undo step. */
+  | { type: 'resizeLabel'; size: LabelSize; merge?: boolean }
   | { type: 'select'; id: string | null }
   | { type: 'undo' }
   | { type: 'redo' }
@@ -90,6 +94,15 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return withHistory(
         state,
         commit(state.history, reorderElement(design, action.id, action.direction)),
+      );
+    case 'resizeLabel':
+      return withHistory(
+        state,
+        commit(
+          state.history,
+          resizeLabel(design, action.size),
+          action.merge ? 'resizeLabel' : undefined,
+        ),
       );
     case 'select':
       return action.id === null || hasElement(design, action.id)

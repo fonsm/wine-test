@@ -9,6 +9,7 @@ import {
   deleteElement,
   normalizeRotation,
   reorderElement,
+  resizeLabel,
   updateElement,
 } from './operations';
 
@@ -203,5 +204,40 @@ describe('normalizeRotation', () => {
     expect(normalizeRotation(-45)).toBe(315);
     expect(normalizeRotation(725)).toBe(5);
     expect(normalizeRotation(359.999)).toBe(0);
+  });
+});
+
+describe('resizeLabel', () => {
+  it('changes the label size and keeps elements centred', () => {
+    const original = sampleDesign(); // 90 × 120 mm
+    const design = resizeLabel(original, { widthMm: 100, heightMm: 140 });
+    valid(design);
+    expect(design.labelSize).toEqual({ widthMm: 100, heightMm: 140 });
+    for (const element of design.elements) {
+      const before = byId(original, element.id);
+      expect(element.x).toBeCloseTo(before.x + 5);
+      expect(element.y).toBeCloseTo(before.y + 10);
+      expect(element.width).toBe(before.width);
+      expect(element.rotation).toBe(before.rotation);
+    }
+  });
+
+  it('keeps elements when the label gets smaller, even if they stick out', () => {
+    const design = resizeLabel(sampleDesign(), { widthMm: 30, heightMm: 30 });
+    valid(design);
+    expect(ids(design)).toEqual(ids(sampleDesign()));
+    expect(byId(design, 'bg')).toMatchObject({ x: -33, y: -48, width: 96 });
+  });
+
+  it('rounds to 0.01 mm', () => {
+    const design = resizeLabel(sampleDesign(), { widthMm: 90.333, heightMm: 120 });
+    expect(design.labelSize.widthMm).toBe(90.33);
+  });
+
+  it('returns the same design for the same or an invalid size', () => {
+    const design = sampleDesign();
+    expect(resizeLabel(design, { widthMm: 90, heightMm: 120 })).toBe(design);
+    expect(resizeLabel(design, { widthMm: 10, heightMm: 120 })).toBe(design);
+    expect(resizeLabel(design, { widthMm: 90, heightMm: Number.NaN })).toBe(design);
   });
 });

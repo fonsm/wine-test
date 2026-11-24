@@ -1,6 +1,7 @@
 // Pure design operations. Every function returns a new design (or the same object when nothing
 // changed) and never mutates its input. Results always pass the design schema.
 import { elementSchema, type Design, type DesignElement, type TextElement } from '../model/schema';
+import { isValidLabelSize, type LabelSize } from '../print/geometry';
 
 /** New images are fitted into this fraction of the label (trim box), keeping their aspect ratio. */
 export const NEW_IMAGE_MAX_FRACTION = 0.8;
@@ -176,4 +177,24 @@ export function reorderElement(design: Design, id: string, direction: LayerDirec
   if (!element) return design;
   elements.splice(to, 0, element);
   return { ...design, elements };
+}
+
+/**
+ * Changes the label size. Elements keep their size and their position relative to the label
+ * centre (decided by the project owner); elements may stick out of a smaller label.
+ */
+export function resizeLabel(design: Design, size: LabelSize): Design {
+  const next = { widthMm: round2(size.widthMm), heightMm: round2(size.heightMm) };
+  if (!isValidLabelSize(next)) return design;
+  const { widthMm, heightMm } = design.labelSize;
+  if (next.widthMm === widthMm && next.heightMm === heightMm) return design;
+
+  const dx = (next.widthMm - widthMm) / 2;
+  const dy = (next.heightMm - heightMm) / 2;
+  const elements = design.elements.map((element) => ({
+    ...element,
+    x: round2(clamp(element.x + dx, -MAX_COORDINATE_MM, MAX_COORDINATE_MM)),
+    y: round2(clamp(element.y + dy, -MAX_COORDINATE_MM, MAX_COORDINATE_MM)),
+  }));
+  return { ...design, labelSize: next, elements };
 }

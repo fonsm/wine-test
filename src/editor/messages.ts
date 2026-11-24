@@ -32,6 +32,14 @@ export interface EditorMessages {
   };
   align: { left: string; center: string; right: string };
   order: { title: string; forward: string; backward: string; front: string; back: string };
+  labelSize: {
+    title: string;
+    preset: string;
+    custom: string;
+    width: string;
+    height: string;
+    range: string;
+  };
 }
 
 const en: EditorMessages = {
@@ -71,6 +79,15 @@ const en: EditorMessages = {
     backward: 'Backward',
     front: 'To front',
     back: 'To back',
+  },
+  labelSize: {
+    title: 'Label size',
+    preset: '{{width}} × {{height}} mm',
+    custom: 'Custom size',
+    width: 'Label width (mm)',
+    height: 'Label height (mm)',
+    range:
+      'Each side between {{min}} and {{max}} mm. Elements keep their place relative to the centre.',
   },
 };
 
@@ -112,6 +129,14 @@ const de: EditorMessages = {
     backward: 'Nach hinten',
     front: 'Ganz nach vorne',
     back: 'Ganz nach hinten',
+  },
+  labelSize: {
+    title: 'Etikettengröße',
+    preset: '{{width}} × {{height}} mm',
+    custom: 'Eigene Größe',
+    width: 'Etikettenbreite (mm)',
+    height: 'Etikettenhöhe (mm)',
+    range: 'Jede Seite zwischen {{min}} und {{max}} mm. Elemente behalten ihre Lage zur Mitte.',
   },
 };
 

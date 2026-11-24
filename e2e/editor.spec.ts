@@ -1,6 +1,6 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { createI18n } from '../src/i18n';
-import { BLEED_MM, LABEL_WIDTH_MM } from '../src/print/geometry';
+import { BLEED_MM, LABEL_HEIGHT_MM, LABEL_WIDTH_MM } from '../src/print/geometry';
 
 const { t } = createI18n('en');
 
@@ -203,4 +203,55 @@ test('layer order buttons move the selected element', async ({ page }) => {
   await expect(layers(page).getByRole('button')).toHaveText([/First/, /Second/]);
   await page.getByRole('button', { name: t('editor:undo') }).click();
   await expect(layers(page).getByRole('button')).toHaveText([/Second/, /First/]);
+});
+
+const DEFAULT_PRESET = `${String(LABEL_WIDTH_MM)}x${String(LABEL_HEIGHT_MM)}`;
+
+test('label size: switch to a custom size and back, elements stay centred', async ({ page }) => {
+  await page.goto('/');
+  const canvas = page.getByTestId('label-canvas').locator('canvas').first();
+  const aspect = async () => {
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error('canvas not visible');
+    return box.height / box.width;
+  };
+
+  await page.getByRole('button', { name: t('editor:addText') }).click();
+  const x0 = await readMm(page, 'x');
+  expect(await aspect()).toBeCloseTo(
+    (LABEL_HEIGHT_MM + 2 * BLEED_MM) / (LABEL_WIDTH_MM + 2 * BLEED_MM),
+    2,
+  );
+
+  const sizeSelect = page.getByLabel(t('editor:labelSize.title'), { exact: true });
+  await expect(sizeSelect).toHaveValue(DEFAULT_PRESET);
+  await sizeSelect.selectOption('custom');
+  await page.getByLabel(t('editor:labelSize.width'), { exact: true }).fill('100');
+  await page.getByLabel(t('editor:labelSize.height'), { exact: true }).fill('140');
+
+  await expect.poll(aspect).toBeCloseTo((140 + 2 * BLEED_MM) / (100 + 2 * BLEED_MM), 2);
+  // The text keeps its place relative to the centre: half the extra width further right.
+  await page
+    .getByRole('list', { name: t('editor:layers') })
+    .getByRole('button')
+    .click();
+  await expect(field(page, 'x')).toHaveValue(String(x0 + (100 - LABEL_WIDTH_MM) / 2));
+
+  // Out-of-range input is not applied.
+  await page.getByLabel(t('editor:labelSize.width'), { exact: true }).fill('500');
+  await expect(field(page, 'x')).toHaveValue(String(x0 + (100 - LABEL_WIDTH_MM) / 2));
+
+  // Typing the size was one undo step.
+  await page.getByRole('button', { name: t('editor:undo') }).click();
+  await expect
+    .poll(aspect)
+    .toBeCloseTo((LABEL_HEIGHT_MM + 2 * BLEED_MM) / (LABEL_WIDTH_MM + 2 * BLEED_MM), 2);
+  await expect(field(page, 'x')).toHaveValue(String(x0));
+  await expect(sizeSelect).toHaveValue(DEFAULT_PRESET);
+
+  // Back to the preset from a custom size.
+  await page.getByRole('button', { name: t('editor:redo') }).click();
+  await expect(sizeSelect).toHaveValue('custom');
+  await sizeSelect.selectOption(DEFAULT_PRESET);
+  await expect(field(page, 'x')).toHaveValue(String(x0));
 });

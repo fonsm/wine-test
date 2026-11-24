@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { EXPORT_DPI, labelSizeWithBleedPx } from '../print/geometry';
 import { MAX_FILE_SIZE_BYTES, MAX_IMAGE_SIDE_PX, MIN_RECOMMENDED_SIZE_PX } from './limits';
 import { processUpload, type Reencoder } from './process';
 import {
@@ -174,6 +175,22 @@ describe('processUpload', () => {
           },
         },
       ],
+    });
+  });
+
+  it('measures the TOO_SMALL warning against the given label size', () => {
+    // 1200 × 1500 px is enough for 90 × 120 mm, but not for a 200 × 250 mm label.
+    const size = { widthMm: 200, heightMm: 250 };
+    const min = labelSizeWithBleedPx(EXPORT_DPI, size);
+    return processUpload(
+      file(pngHeader(1200, 1500), 'a.png', 'image/png'),
+      fakeReencoder(1200, 1500),
+      size,
+    ).then((result) => {
+      expect(result).toMatchObject({
+        ok: true,
+        warnings: [{ code: 'TOO_SMALL', params: { minWidth: min.width, minHeight: min.height } }],
+      });
     });
   });
 });

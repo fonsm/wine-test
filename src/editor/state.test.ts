@@ -162,4 +162,20 @@ describe('editorReducer', () => {
       expect(designSchema.safeParse(snapshot).success).toBe(true);
     }
   });
+
+  it('changing the label size is one undo step; typing a size is merged', () => {
+    const start = createEditorState(sampleDesign());
+    const state = run(
+      start,
+      { type: 'resizeLabel', size: { widthMm: 100, heightMm: 120 }, merge: true },
+      { type: 'resizeLabel', size: { widthMm: 100, heightMm: 140 }, merge: true },
+    );
+    expect(design(state).labelSize).toEqual({ widthMm: 100, heightMm: 140 });
+    expect(design(run(state, { type: 'undo' }))).toEqual(sampleDesign());
+  });
+
+  it('ignores invalid label sizes', () => {
+    const start = createEditorState(sampleDesign());
+    expect(run(start, { type: 'resizeLabel', size: { widthMm: 5, heightMm: 120 } })).toBe(start);
+  });
 });

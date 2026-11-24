@@ -7,7 +7,7 @@ import {
   MAX_IMAGE_SIDE_PX,
   MIN_RECOMMENDED_SIZE_PX,
 } from './limits';
-import { EXPORT_DPI } from '../print/geometry';
+import { EXPORT_DPI, labelSizeWithBleedPx, type LabelSize } from '../print/geometry';
 import { detectImageType, readImageDimensions } from './sniff';
 import type {
   AcceptedImageType,
@@ -67,6 +67,8 @@ function claimsOtherType(file: File, actual: AcceptedImageType): boolean {
 export async function processUpload(
   file: File,
   reencode: Reencoder = reencodeWithCanvas,
+  /** The design's label size, for the TOO_SMALL warning. Defaults to the standard label. */
+  labelSize?: LabelSize,
 ): Promise<UploadResult> {
   // Checked first so huge files are never read into memory.
   if (file.size > MAX_FILE_SIZE_BYTES)
@@ -99,7 +101,7 @@ export async function processUpload(
   }
 
   const warnings: UploadWarning[] = [];
-  const min = MIN_RECOMMENDED_SIZE_PX;
+  const min = labelSize ? labelSizeWithBleedPx(EXPORT_DPI, labelSize) : MIN_RECOMMENDED_SIZE_PX;
   if (clean.width < min.width || clean.height < min.height) {
     warnings.push({
       code: 'TOO_SMALL',

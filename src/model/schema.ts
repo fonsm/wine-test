@@ -9,7 +9,12 @@
 //
 // Changing anything here that affects saved files needs a new schema version and a migration.
 import { z } from 'zod';
-import { LABEL_HEIGHT_MM, LABEL_WIDTH_MM } from '../print/geometry';
+import {
+  LABEL_HEIGHT_MM,
+  LABEL_WIDTH_MM,
+  MAX_LABEL_SIZE_MM,
+  MIN_LABEL_SIZE_MM,
+} from '../print/geometry';
 import { detectImageType } from '../upload/sniff';
 
 export const DESIGN_FILE_FORMAT = 'dl-school-wine-label';
@@ -29,6 +34,7 @@ const slug = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/);
 const id = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/);
 const mm = z.number().min(-MAX_LENGTH_MM).max(MAX_LENGTH_MM);
 const positiveMm = z.number().gt(0).max(MAX_LENGTH_MM);
+const labelSide = z.number().min(MIN_LABEL_SIZE_MM).max(MAX_LABEL_SIZE_MM);
 const color = z.string().regex(/^#[0-9a-f]{6}([0-9a-f]{2})?$/i);
 
 const DATA_URL = /^data:(image\/(?:png|jpeg));base64,([A-Za-z0-9+/]+={0,2})$/;
@@ -104,7 +110,7 @@ export const designSchema = z
   .strictObject({
     format: z.literal(DESIGN_FILE_FORMAT),
     schemaVersion: z.literal(CURRENT_SCHEMA_VERSION),
-    labelSize: z.strictObject({ widthMm: positiveMm, heightMm: positiveMm }),
+    labelSize: z.strictObject({ widthMm: labelSide, heightMm: labelSide }),
     templateId: slug,
     bottleId: slug,
     assets: z

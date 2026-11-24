@@ -126,4 +126,12 @@ describe('designSchema', () => {
     expect(issuesOf({ ...sampleDesign(), templateId: '<b>x</b>' })).toEqual(['templateId']);
     expect(issuesOf({ ...sampleDesign(), bottleId: '' })).toEqual(['bottleId']);
   });
+
+  it('accepts label sizes from 30 to 300 mm only', () => {
+    const size = (widthMm: number, heightMm: number) =>
+      issuesOf({ ...sampleDesign(), labelSize: { widthMm, heightMm } });
+    expect(size(100, 140)).toEqual([]);
+    expect(size(29, 140)).toEqual(['labelSize.widthMm']);
+    expect(size(100, 301)).toEqual(['labelSize.heightMm']);
+  });
 });

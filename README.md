@@ -51,8 +51,9 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on 
 
 These were decided without confirmed requirements and can be changed:
 
-- **Label geometry:** 90 × 120 mm, 300 DPI, 3 mm bleed, 3 mm safe margin.
+- **Label geometry:** 90 × 120 mm (default size), 300 DPI, 3 mm bleed, 3 mm safe margin.
   The values live in one module, `src/print/geometry.ts`.
+- **Label size setting** (decided by the project owner): the editor offers the presets from `LABEL_SIZE_PRESETS` (for now only 90 × 120 mm) and a custom size. Custom sizes are limited to **30–300 mm** per side; design files with a size outside this range are refused. When the size changes, elements keep their size and their position relative to the label centre, and may stick out of a smaller label. Typing a size is one undo step. The low-resolution warning for uploads uses the current label size.
 - **Node.js 24** is the supported runtime.
 - **Image upload** (`src/upload`, limits in `src/upload/limits.ts`):
   - Maximum file size: **10 MB**.
