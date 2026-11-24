@@ -2,7 +2,7 @@
 // area, as it will look printed. Used for the 3D preview's texture and the 2D fallback.
 import Konva from 'konva';
 import { toNodePosition } from '../editor/units';
-import type { Design } from '../model/schema';
+import type { Design, DesignElement } from '../model/schema';
 import { PAPER_COLOR, elementNode, type ElementNode } from './elementNodes';
 import { designFontSpecs, loadFonts } from './fonts';
 import { cachedImage, loadImage } from './images';
@@ -68,6 +68,20 @@ export class LabelRenderer {
       group.add(createNode(node));
       this.layer.add(group);
     }
+    this.layer.draw();
+    return this.layer.getNativeCanvasElement();
+  }
+
+  /**
+   * Draws one element alone, unrotated and without opacity, filling widthPx × heightPx on a
+   * transparent background (for the PDF, which places, rotates and fades it itself).
+   */
+  drawElement(element: DesignElement, design: Design, widthPx: number, heightPx: number) {
+    const pxPerMm = widthPx / element.width;
+    this.stage.size({ width: widthPx, height: heightPx });
+    this.layer.destroyChildren();
+    const node = elementNode(element, design, pxPerMm, cachedImage);
+    if (node) this.layer.add(createNode(node));
     this.layer.draw();
     return this.layer.getNativeCanvasElement();
   }

@@ -1,6 +1,7 @@
 import i18next, { type i18n } from 'i18next';
 import { appMessages } from '../app/messages';
 import { editorMessages } from '../editor/messages';
+import { exportMessages } from '../export/messages';
 import { designMessages } from '../model/messages';
 import { previewMessages } from '../preview/messages';
 import { uploadMessages } from '../upload/messages';
@@ -26,7 +27,7 @@ export function createI18n(language: Language): i18n {
     lng: language,
     fallbackLng: DEFAULT_LANGUAGE,
     supportedLngs: LANGUAGES,
-    ns: ['app', 'upload', 'design', 'editor', 'preview'],
+    ns: ['app', 'upload', 'design', 'editor', 'preview', 'export'],
     resources: {
       en: {
         app: appMessages.en,
@@ -34,6 +35,7 @@ export function createI18n(language: Language): i18n {
         design: designMessages.en,
         editor: editorMessages.en,
         preview: previewMessages.en,
+        export: exportMessages.en,
       },
       de: {
         app: appMessages.de,
@@ -41,6 +43,7 @@ export function createI18n(language: Language): i18n {
         design: designMessages.de,
         editor: editorMessages.de,
         preview: previewMessages.de,
+        export: exportMessages.de,
       },
     },
     initAsync: false,

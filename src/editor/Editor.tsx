@@ -1,6 +1,7 @@
 import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { DEFAULT_FONT_FAMILY } from '../fonts/fonts';
 import { useT } from '../i18n/I18nContext';
+import { ExportPanel } from '../export/ExportPanel';
 import { DesignFileControls } from '../model/DesignFileControls';
 import { UploadField } from '../upload/UploadField';
 import type { CleanImage } from '../upload/types';
@@ -184,6 +185,7 @@ export function Editor({ state, dispatch, preview }: EditorProps) {
             dispatch({ type: 'select', id });
           }}
         />
+        <ExportPanel design={design} />
         <DesignFileControls
           design={design}
           onLoad={(loaded) => {

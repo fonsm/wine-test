@@ -6,7 +6,7 @@ import type { Design } from '../model/schema';
 import { LabelRenderer, prepareDesign } from '../render/renderLabel';
 import { bottleShape } from './bottles';
 import { drawFlatPreview } from './flat';
-import { isTooSlow } from './performance';
+import { chooseQuality } from './performance';
 import { PreviewSection, type PreviewMode } from './PreviewSection';
 import { createLatestRunner } from './schedule';
 import { createViewer, supportsWebGL2, type Viewer } from './viewer';
@@ -21,7 +21,15 @@ const FLAT_PX_PER_MM = 3;
 /** Frames rendered to decide whether this device is fast enough for 3D. */
 const MEASURED_FRAMES = 5;
 
+/** Pause before measuring the 3D speed a second time. */
+const RETRY_PAUSE_MS = 500;
+
 type FallbackReason = 'webgl' | 'slow';
+
+const wait = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 /** Resolves after the next frame (the viewer renders in requestAnimationFrame before that). */
 const nextFrame = () =>
@@ -51,6 +59,9 @@ export default function BottlePreview({ design }: { design: Design }) {
     let measured = false;
     let revision = 0;
     let active = true;
+
+    /** False after unmount, or when the viewer was replaced (TypeScript cannot see `await` changing `active`). */
+    const stillShowing = (viewer: Viewer) => active && viewerRef.current === viewer;
 
     function showFlat(why: FallbackReason) {
       viewerRef.current?.dispose();
@@ -85,7 +96,19 @@ export default function BottlePreview({ design }: { design: Design }) {
         viewer.setLabel(image, next.labelSize);
         if (!measured) {
           measured = true;
-          if (isTooSlow(viewer.measureFrames(MEASURED_FRAMES))) showFlat('slow');
+          const quality = await chooseQuality(
+            {
+              measure: () => viewer.measureFrames(MEASURED_FRAMES),
+              pixelRatio: () => viewer.pixelRatio(),
+              setPixelRatio: (ratio) => {
+                viewer.setPixelRatio(ratio);
+              },
+            },
+            () => wait(RETRY_PAUSE_MS),
+          );
+          // Unmounted, or WebGL was lost during the pause (that path redraws on its own).
+          if (!stillShowing(viewer)) return;
+          if (quality === 'flat') showFlat('slow');
           else setMode('3d');
         }
       }
@@ -119,7 +142,7 @@ export default function BottlePreview({ design }: { design: Design }) {
 
   const message = reason === 'slow' ? t('preview:fallbackSlow') : t('preview:fallbackNoWebgl');
   return (
-    <PreviewSection mode={mode} sectionRef={sectionRef}>
+    <PreviewSection mode={mode} fallback={reason} sectionRef={sectionRef}>
       {mode === 'loading' && <p className="editor-hint">{t('preview:loading')}</p>}
       {reason && (
         <p role="status" className="bottle-preview-message">

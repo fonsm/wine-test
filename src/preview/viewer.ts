@@ -29,6 +29,9 @@ const MAX_ANISOTROPY = 8;
 
 export interface Viewer {
   setLabel(image: LabelImage, size: LabelSize): void;
+  pixelRatio(): number;
+  /** Renders with fewer pixels (or more); 1 = one canvas pixel per CSS pixel. */
+  setPixelRatio(ratio: number): void;
   /** Renders n frames and returns how long each took, GPU work included (milliseconds). */
   measureFrames(n: number): number[];
   dispose(): void;
@@ -124,6 +127,11 @@ export function createViewer(
     setLabel(image, size) {
       view.setLabel(image, size);
       requestRender();
+    },
+    pixelRatio: () => renderer.getPixelRatio(),
+    setPixelRatio(ratio) {
+      renderer.setPixelRatio(ratio);
+      resize();
     },
     measureFrames(n) {
       const gl = renderer.getContext();

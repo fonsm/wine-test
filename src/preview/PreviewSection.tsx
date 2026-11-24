@@ -7,10 +7,13 @@ export type PreviewMode = 'loading' | '3d' | 'flat' | 'error';
 /** The frame around the preview, shared by the loading state and the loaded preview. */
 export function PreviewSection({
   mode,
+  fallback,
   sectionRef,
   children,
 }: {
   mode: PreviewMode;
+  /** Why the flat preview is shown, for diagnosis (data-fallback). */
+  fallback?: string | null;
   sectionRef?: Ref<HTMLElement>;
   children: ReactNode;
 }) {
@@ -23,6 +26,7 @@ export function PreviewSection({
       aria-labelledby={headingId}
       data-testid="bottle-preview"
       data-mode={mode}
+      data-fallback={fallback ?? undefined}
     >
       <h2 id={headingId}>{t('preview:title')}</h2>
       {children}
