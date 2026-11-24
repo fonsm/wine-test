@@ -93,6 +93,20 @@ These were decided without confirmed requirements and can be changed:
   - **Turning**: drag sideways to turn the bottle all the way around, up and down only a little (about 30° from above to 15° from below). No zoom or pan. On touch screens, vertical swipes keep scrolling the page. There are no turn buttons (decided by the project owner): the 3D view is a visual extra, and everything on the label can be edited with the keyboard in the editor.
   - **Flat fallback**: without WebGL 2 (needed by Three.js), or when the first 3D frames take longer than 150 ms each (median of five), a flat front view of the bottle is shown instead, with a message explaining why. It also updates live. If the browser takes WebGL away later, the preview switches to the flat view.
   - Geometries, materials, textures, the WebGL renderer and its context are released when the preview is removed (for example when the bottle changes).
+- **PDF export** (`src/export`, all lengths in `src/print/geometry.ts`):
+  - **True size**: everything is placed in millimetres converted to PDF points (1 pt = 1/72 inch); unit tests check page and element sizes within 0.01 mm.
+  - **Layouts** (decided by the project owner, the user chooses before downloading): **For my printer** (default): the label centred on A4 portrait with crop marks; A4 landscape if the label only fits that way; a larger page if it fits neither (needs a print shop or larger paper). **For a print shop**: the page is exactly the label, plus bleed if turned on.
+  - **Bleed**: 3 mm on every side, on by default, can be turned off. Elements are cut at the bleed edge (or at the trim without bleed).
+  - **Crop marks** (printer layout only): 5 mm long, 0.25 mm thick, starting 2 mm outside the bleed (or the trim), on the trim lines.
+  - **Text** (decided by the project owner): each text box is placed as a 600 DPI picture with a transparent background, drawn by the same code as the editor, so the line breaks are identical. Text in the PDF cannot be selected or searched. No extra package is needed.
+  - **Images**: placed at their exact size and crop (cover/contain/stretch as in the editor). Images with more than 300 DPI at their printed size are resampled to 300 DPI (JPEG photos stay JPEG, quality 0.92); smaller images are never enlarged and keep their pixels. If one ends up below 300 DPI, the export says so. An image used whole at its own size goes in unchanged.
+  - **Shapes** (rectangles, ellipses, lines) are vector drawings.
+  - **Colours**: RGB (sRGB), as pdf-lib cannot write CMYK. Print shops that need CMYK or PDF/X convert themselves.
+  - **Calibration page**: A4 (decided by the project owner), with a 50 × 50 mm square, a 150 mm ruler with a tick every millimetre, and the instructions. Its text uses the PDF standard font Helvetica, which is not embedded (the PDF viewer provides it), so no font file or licence is added.
+  - **Instructions** "Print at 100%, no scaling" are shown next to the download buttons, which refer to them for screen readers.
+  - **Metadata**: title and the app name only; no author or other personal data.
+  - pdf-lib (about 430 kB, 180 kB gzipped) is loaded on the first download only. pdf-lib has had no release since 2022 (version 1.17.1); it is stable and widely used.
+  - File names: `wine-label.pdf` and `wine-label-calibration-page.pdf`.
 - **UI language**: a **DE | EN** switch in the header. The first visit follows the browser language (German for any `de` locale, otherwise English). The choice is remembered in this browser's `localStorage` under `wine-label.language` (value `de` or `en`, nothing else; decided by the project owner). No cookie is set and nothing is sent anywhere. If storage is blocked, the switch still works until the page is reloaded. Switching keeps the design and its undo history.
 - **German texts use the formal "Sie".**
 - **Playwright runs Chromium only** for now. Firefox and WebKit can be added later.

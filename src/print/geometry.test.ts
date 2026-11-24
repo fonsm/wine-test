@@ -11,6 +11,11 @@ import {
   isValidLabelSize,
   labelSizeWithBleedPx,
   mmToPx,
+  mmToPt,
+  A4_PAPER,
+  TEXT_EXPORT_DPI,
+  CALIBRATION_SQUARE_MM,
+  CALIBRATION_RULER_MM,
 } from './geometry';
 
 describe('print geometry', () => {
@@ -60,5 +65,27 @@ describe('label sizes', () => {
     expect(isValidLabelSize({ widthMm: 29.9, heightMm: 100 })).toBe(false);
     expect(isValidLabelSize({ widthMm: 100, heightMm: 301 })).toBe(false);
     expect(isValidLabelSize({ widthMm: Number.NaN, heightMm: 100 })).toBe(false);
+  });
+});
+
+describe('PDF geometry', () => {
+  it('converts millimetres to PDF points (1/72 inch)', () => {
+    expect(mmToPt(25.4)).toBe(72);
+    expect(mmToPt(210)).toBeCloseTo(595.28, 2);
+    expect(mmToPt(297)).toBeCloseTo(841.89, 2);
+  });
+
+  it('uses A4 portrait paper for home printers and calibration', () => {
+    expect(A4_PAPER).toEqual({ widthMm: 210, heightMm: 297 });
+  });
+
+  it('draws text at twice the image resolution, so small type stays sharp', () => {
+    expect(TEXT_EXPORT_DPI).toBe(2 * EXPORT_DPI);
+  });
+
+  it('has a calibration square and ruler that fit on A4 with room for the printer margin', () => {
+    expect(CALIBRATION_SQUARE_MM).toBe(50);
+    expect(CALIBRATION_RULER_MM).toBe(150);
+    expect(CALIBRATION_RULER_MM).toBeLessThanOrEqual(A4_PAPER.widthMm - 40);
   });
 });

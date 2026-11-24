@@ -8,6 +8,27 @@ export const BLEED_MM = 3;
 export const SAFE_MARGIN_MM = 3;
 
 const MM_PER_INCH = 25.4;
+const POINTS_PER_INCH = 72;
+
+/** Text is placed in the PDF as a picture at this resolution, so small type stays sharp. */
+export const TEXT_EXPORT_DPI = 2 * EXPORT_DPI;
+
+/** Paper for the "own printer" layout and the calibration page (portrait). */
+export const A4_PAPER = { widthMm: 210, heightMm: 297 } as const;
+
+/** Crop marks: gap between the bleed edge (or the trim, without bleed) and the mark, length and line width. */
+export const CROP_MARK_GAP_MM = 2;
+export const CROP_MARK_LENGTH_MM = 5;
+export const CROP_MARK_LINE_MM = 0.25;
+
+/** Calibration page: a square and a ruler of known size to check the printer's scale. */
+export const CALIBRATION_SQUARE_MM = 50;
+export const CALIBRATION_RULER_MM = 150;
+
+/** Converts millimetres to PDF points (1/72 inch). */
+export function mmToPt(mm: number): number {
+  return Number(((mm / MM_PER_INCH) * POINTS_PER_INCH).toFixed(9));
+}
 
 export interface LabelSize {
   widthMm: number;

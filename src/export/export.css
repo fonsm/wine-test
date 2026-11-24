@@ -1,0 +1,70 @@
+/* PDF export panel. */
+
+.export-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.export-panel h2 {
+  margin: 0;
+}
+
+.export-layout {
+  /* Fieldsets do not shrink below their content by default; the long labels must wrap. */
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.export-layout legend {
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.export-layout label,
+.export-check {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.export-layout input,
+.export-check input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.export-instructions {
+  padding: 8px 12px;
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: #fbf3e8;
+}
+
+.export-instructions p {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+}
+
+.export-buttons {
+  display: grid;
+  gap: 8px;
+}
+
+.export-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.export-panel [role='status'],
+.export-panel [role='alert'] {
+  margin: 0;
+}
