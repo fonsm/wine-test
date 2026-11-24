@@ -6,6 +6,8 @@
   --color-bg: #f6f3ee;
   --color-surface: #ffffff;
   --color-border: #d9d3c9;
+  /* Borders of form fields: at least 3:1 against the page and panels (WCAG 1.4.11). */
+  --color-control-border: #8a8178;
   --color-accent: #7b1e3a;
   --color-accent-text: #ffffff;
   --color-focus: #2563eb;
@@ -118,7 +120,7 @@ textarea {
   min-width: 0;
   min-height: 44px;
   padding: 8px 10px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-control-border);
   border-radius: var(--radius);
   background: var(--color-surface);
 }

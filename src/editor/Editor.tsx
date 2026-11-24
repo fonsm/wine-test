@@ -92,6 +92,7 @@ export function Editor({ state, dispatch, preview }: EditorProps) {
 
   return (
     // Keyboard shortcuts for everything inside the editor (they bubble up to here).
+    // The order of the parts is the focus order; it matches the layout (see editor.css).
     <div className="editor" onKeyDown={handleKeyDown}>
       <div className="editor-toolbar">
         <button
@@ -136,10 +137,6 @@ export function Editor({ state, dispatch, preview }: EditorProps) {
         </button>
       </div>
 
-      <div className="editor-upload">
-        <UploadField labelSize={design.labelSize} onImage={(image) => void addImage(image)} />
-      </div>
-
       <div className="editor-stage">
         <LabelCanvas
           design={design}
@@ -161,6 +158,10 @@ export function Editor({ state, dispatch, preview }: EditorProps) {
         <p id={helpId} className="editor-hint">
           {t('editor:canvasHelp')}
         </p>
+      </div>
+
+      <div className="editor-upload">
+        <UploadField labelSize={design.labelSize} onImage={(image) => void addImage(image)} />
       </div>
 
       {preview && <div className="editor-preview">{preview}</div>}
