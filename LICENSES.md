@@ -16,3 +16,12 @@ All fonts are used unmodified (only the file names were shortened) and are serve
 SIL Open Font License 1.1: https://openfontlicense.org. The license allows bundling and redistributing the fonts with software. The fonts may not be sold on their own, and modified versions must not use a Reserved Font Name.
 
 License texts: `src/assets/fonts/OFL-PlayfairDisplay.txt`, `OFL-EBGaramond.txt`, `OFL-Inter.txt`, `OFL-GreatVibes.txt`.
+
+## Templates and bottle shapes
+
+| Asset           | Files                                                                         | Source                                                         | License                                                                                      | Attribution  |
+| --------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------ |
+| Label templates | `src/templates/data/templates/*.json` (blank, classic, elegant, modern)       | Created for this project by DL-School (no third-party content) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (decided by the project owner) | Not required |
+| Bottle shapes   | `src/templates/data/bottles/*.json` (bordeaux, burgundy, schlegel, sparkling) | Created for this project by DL-School (no third-party content) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (decided by the project owner) | Not required |
+
+The templates contain only text and shapes, no images (decided by the project owner). They use only the fonts listed above. The winery name "Weingut Sonnenhang" and all other sample texts are made up. The bottle shapes are drawn from typical outer dimensions of standard 750 ml bottles, not copied from any manufacturer's drawing.

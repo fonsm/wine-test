@@ -3,6 +3,8 @@ import { DEFAULT_FONT_FAMILY } from '../fonts/fonts';
 import { useT } from '../i18n/I18nContext';
 import { ExportPanel } from '../export/ExportPanel';
 import { DesignFileControls } from '../model/DesignFileControls';
+import { templateDesign } from '../templates/catalog';
+import { GalleryPanel } from '../templates/GalleryPanel';
 import { UploadField } from '../upload/UploadField';
 import type { CleanImage } from '../upload/types';
 import './editor.css';
@@ -164,6 +166,15 @@ export function Editor({ state, dispatch, preview }: EditorProps) {
       {preview && <div className="editor-preview">{preview}</div>}
 
       <div className="editor-panel">
+        <GalleryPanel
+          design={design}
+          onApplyTemplate={(id) => {
+            dispatch({ type: 'applyTemplate', design: templateDesign(id) });
+          }}
+          onPickBottle={(bottleId) => {
+            dispatch({ type: 'setBottle', bottleId });
+          }}
+        />
         <LabelSizePanel
           size={design.labelSize}
           onChange={(size, merge) => {

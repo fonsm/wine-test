@@ -142,7 +142,7 @@ export default function BottlePreview({ design }: { design: Design }) {
 
   const message = reason === 'slow' ? t('preview:fallbackSlow') : t('preview:fallbackNoWebgl');
   return (
-    <PreviewSection mode={mode} fallback={reason} sectionRef={sectionRef}>
+    <PreviewSection mode={mode} bottleId={bottle.id} fallback={reason} sectionRef={sectionRef}>
       {mode === 'loading' && <p className="editor-hint">{t('preview:loading')}</p>}
       {reason && (
         <p role="status" className="bottle-preview-message">

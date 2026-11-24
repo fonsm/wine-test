@@ -1,0 +1,63 @@
+/* Template and bottle gallery. */
+
+.gallery {
+  display: grid;
+  gap: 8px;
+}
+
+.gallery h2 {
+  margin: 0;
+}
+
+.gallery-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  gap: 8px;
+}
+
+.gallery-item {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 4px;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.gallery-item[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.gallery-item > span:last-child {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.gallery-picture {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 72px;
+}
+
+.gallery-picture svg {
+  height: 100%;
+  width: auto;
+}
+
+.gallery-label {
+  height: auto;
+  width: 54px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.gallery-label img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
