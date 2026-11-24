@@ -10,25 +10,11 @@ import {
   type DesignFileError,
 } from '../src/model/serialize';
 import { sampleDesign } from '../src/model/testing/fixtures';
+import { DESIGN_INPUT, chooseFile, recordNetworkRequests } from './helpers';
 
-const DESIGN_INPUT = 'input[type="file"][accept=".json,application/json"]';
-
-/** Puts a text file into the "Open design" input, built in the browser like a user-chosen file. */
+/** Puts a text file into the "Open design" input, like a user-chosen file. */
 async function openDesign(page: Page, name: string, text: string, padTo = 0): Promise<void> {
-  await page.evaluate(
-    ({ selector, name, text, padTo }) => {
-      const input = document.querySelector<HTMLInputElement>(selector);
-      if (!input) throw new Error('design input not found');
-      const encoded = new TextEncoder().encode(text);
-      const bytes = new Uint8Array(Math.max(padTo, encoded.length)).fill(0x20);
-      bytes.set(encoded);
-      const transfer = new DataTransfer();
-      transfer.items.add(new File([bytes], name, { type: 'application/json' }));
-      input.files = transfer.files;
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-    },
-    { selector: DESIGN_INPUT, name, text, padTo },
-  );
+  await chooseFile(page, DESIGN_INPUT, name, 'application/json', { text, padTo });
 }
 
 /** Opens a downloaded file. Playwright stores downloads under a random name; returns that name. */
@@ -69,11 +55,7 @@ test('opens a design with images and HTML-like text without inserting HTML', asy
 });
 
 test('no network request is made while saving or opening a design', async ({ page }) => {
-  const requests: string[] = [];
-  page.on('request', (request) => {
-    const { protocol } = new URL(request.url());
-    if (protocol !== 'blob:' && protocol !== 'data:') requests.push(request.url());
-  });
+  const requests = recordNetworkRequests(page);
 
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: createI18n('en').t('design:save') }).click();

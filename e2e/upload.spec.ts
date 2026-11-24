@@ -11,21 +11,9 @@ import {
 } from '../src/upload/limits';
 import { GIF_BYTES, PNG_SIGNATURE, SVG_BYTES, pngHeader } from '../src/upload/testing/fixtures';
 import type { UploadIssue } from '../src/upload/types';
+import { IMAGE_INPUT, chooseFile, recordNetworkRequests, type FileSource } from './helpers';
 
-// Test files are built inside the browser (canvas, Uint8Array) and handed to the file input
-// through a DataTransfer, exactly like a file chosen by the user.
-
-/** A gradient image drawn on a canvas and encoded as `type`, optionally with EXIF/GPS data added. */
-interface CanvasSource {
-  canvas: { type: string; width: number; height: number };
-  exif?: boolean;
-}
-/** Raw bytes, optionally zero-padded to `padTo` bytes. */
-interface BytesSource {
-  bytes: number[];
-  padTo?: number;
-}
-type Source = CanvasSource | BytesSource;
+type Source = FileSource;
 
 const ascii = (text: string): number[] => Array.from(text, (char) => char.charCodeAt(0));
 
@@ -69,51 +57,9 @@ const CORRUPT_PNG: number[] = [
   ...[0, 0, 0, 0, ...ascii('IEND'), 0xae, 0x42, 0x60, 0x82],
 ];
 
-/** Puts a file into the upload input. Returns the uploaded bytes for canvas sources. */
-async function upload(
-  page: Page,
-  name: string,
-  mimeType: string,
-  source: Source,
-): Promise<number[]> {
-  return page.evaluate(
-    async ({ name, mimeType, source, exifApp1 }) => {
-      let bytes: Uint8Array<ArrayBuffer>;
-      if ('canvas' in source) {
-        const { type, width, height } = source.canvas;
-        const canvas = new OffscreenCanvas(width, height);
-        const ctx = canvas.getContext('2d');
-        if (!ctx) throw new Error('no 2d context');
-        const gradient = ctx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, '#7b1e3a');
-        gradient.addColorStop(1, '#f2e6c9');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, width, height);
-        const encoded = new Uint8Array(
-          await (await canvas.convertToBlob({ type, quality: 0.9 })).arrayBuffer(),
-        );
-        // Insert the EXIF segment right after the JPEG SOI marker.
-        bytes = source.exif
-          ? new Uint8Array([...encoded.subarray(0, 2), ...exifApp1, ...encoded.subarray(2)])
-          : encoded;
-      } else {
-        bytes = new Uint8Array(Math.max(source.padTo ?? 0, source.bytes.length));
-        bytes.set(source.bytes);
-      }
-
-      const input = document.querySelector<HTMLInputElement>(
-        'input[type="file"][accept^="image/"]',
-      );
-      if (!input) throw new Error('file input not found');
-      const transfer = new DataTransfer();
-      transfer.items.add(new File([bytes], name, { type: mimeType }));
-      input.files = transfer.files;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-      return 'canvas' in source ? Array.from(bytes) : [];
-    },
-    { name, mimeType, source, exifApp1: EXIF_APP1 },
-  );
+/** Puts a file into the image upload input. Returns the uploaded bytes for canvas sources. */
+function upload(page: Page, name: string, mimeType: string, source: Source): Promise<number[]> {
+  return chooseFile(page, IMAGE_INPUT, name, mimeType, source);
 }
 
 const preview = (page: Page) => page.locator('img[data-testid="upload-preview"]');
@@ -128,7 +74,7 @@ async function previewBytes(page: Page): Promise<number[]> {
 
 const jpeg = (width = 1200, height = 1500, exif = false): Source => ({
   canvas: { type: 'image/jpeg', width, height },
-  exif,
+  ...(exif ? { exifApp1: EXIF_APP1 } : {}),
 });
 
 test.beforeEach(async ({ page }) => {
@@ -166,12 +112,7 @@ test('re-encodes WebP as PNG', async ({ page }) => {
 });
 
 test('no network request is made during upload', async ({ page }) => {
-  const requests: string[] = [];
-  page.on('request', (request) => {
-    const { protocol } = new URL(request.url());
-    // blob: and data: URLs are in-memory and never leave the browser.
-    if (protocol !== 'blob:' && protocol !== 'data:') requests.push(request.url());
-  });
+  const requests = recordNetworkRequests(page);
 
   await upload(page, 'private.jpg', 'image/jpeg', jpeg(1200, 1500, true));
   await expect(preview(page)).toBeVisible();
