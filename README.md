@@ -1,4 +1,4 @@
-git # Wine Label Designer Test
+# Wine Label Designer
 
 A free, browser-based wine label designer (MVP) by DL-School, with a German and English UI.
 

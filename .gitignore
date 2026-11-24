@@ -5,3 +5,8 @@ playwright-report
 test-results
 *.log
 .DS_Store
+
+# Editor swap files
+*.swp
+*.swo
+*~
