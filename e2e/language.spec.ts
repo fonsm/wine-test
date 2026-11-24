@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createI18n } from '../src/i18n';
 import { formatDesignFileError } from '../src/model/format';
 import { DESIGN_INPUT, chooseFile } from './helpers';

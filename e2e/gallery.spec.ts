@@ -1,4 +1,4 @@
-import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import { expect, test, type Page, type TestInfo } from './fixtures';
 import { createI18n } from '../src/i18n';
 import { BOTTLE_IDS, TEMPLATES, template } from './catalogData';
 import { sameBytes, screenshotBytes } from './helpers';

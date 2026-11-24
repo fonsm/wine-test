@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { CALIBRATION_PDF_FILE_NAME, LABEL_PDF_FILE_NAME } from '../src/export/ExportPanel';
 import { createI18n, type Language } from '../src/i18n';
 import { IMAGE_INPUT, chooseFile } from './helpers';

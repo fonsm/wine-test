@@ -1,37 +1,17 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { CALIBRATION_PDF_FILE_NAME, LABEL_PDF_FILE_NAME } from '../src/export/ExportPanel';
 import { inspectPdf } from '../src/export/testing/inspectPdf';
 import { createI18n } from '../src/i18n';
 import { A4_PAPER, BLEED_MM } from '../src/print/geometry';
-import { IMAGE_INPUT, chooseFile, recordNetworkRequests } from './helpers';
+import {
+  IMAGE_INPUT,
+  captureDownloads,
+  chooseFile,
+  download,
+  recordNetworkRequests,
+} from './helpers';
 
 const { t } = createI18n('en');
-
-/** Keeps every Blob the page turns into a download URL, so the test can read the PDF bytes. */
-async function captureDownloads(page: Page) {
-  await page.addInitScript(() => {
-    const kept: Blob[] = [];
-    (window as unknown as { keptBlobs: Blob[] }).keptBlobs = kept;
-    const original = URL.createObjectURL.bind(URL);
-    URL.createObjectURL = (object: Blob | MediaSource) => {
-      if (object instanceof Blob) kept.push(object);
-      return original(object);
-    };
-  });
-}
-
-async function download(page: Page, button: string): Promise<{ name: string; bytes: Uint8Array }> {
-  const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: button }).click();
-  const name = (await downloadPromise).suggestedFilename();
-  const bytes = await page.evaluate(async () => {
-    const blobs = (window as unknown as { keptBlobs: Blob[] }).keptBlobs;
-    const last = blobs.at(-1);
-    if (!last) throw new Error('no download blob');
-    return Array.from(new Uint8Array(await last.arrayBuffer()));
-  });
-  return { name, bytes: new Uint8Array(bytes) };
-}
 
 test.beforeEach(async ({ page }) => {
   await captureDownloads(page);

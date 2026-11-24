@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { createI18n, type Language } from '../src/i18n';
 import { DESIGN_FILE_NAME } from '../src/model/download';
 import { formatDesignFileError } from '../src/model/format';

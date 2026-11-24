@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { createI18n, type Language } from '../src/i18n';
 import { EXPORT_DPI } from '../src/print/geometry';
 import { formatIssue } from '../src/upload/format';
