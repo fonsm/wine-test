@@ -1,6 +1,7 @@
 // Snapping to guides while dragging. All values in millimetres, origin = label trim corner.
 import type { Design } from '../model/schema';
 import { BLEED_MM, SAFE_MARGIN_MM } from '../print/geometry';
+import { round2 } from '../util/numbers';
 
 /** Snap distance on screen. Converted to millimetres with the current zoom. */
 export const SNAP_THRESHOLD_PX = 6;
@@ -38,8 +39,6 @@ export function snapGuides(design: Design, movingId: string | null): Guides {
   }
   return { vertical, horizontal };
 }
-
-const round2 = (value: number) => Math.round(value * 100) / 100;
 
 /** Finds the smallest shift (within the threshold) that puts one of `edges` on one of `guides`. */
 function snapAxis(
