@@ -62,6 +62,16 @@ These were decided without confirmed requirements and can be changed:
   - The error code list from the requirements was extended by **`DIMENSIONS_TOO_LARGE`** for the maximum pixel size.
   - EXIF, GPS and all other metadata are removed by decoding and re-encoding the image on a canvas. The EXIF orientation is applied first, so photos stay upright. **JPEG stays JPEG** (quality 0.95). **PNG and WebP become PNG**, because pdf-lib can only embed PNG and JPEG.
   - Requires `OffscreenCanvas` and `createImageBitmap` (all current browsers; Safari 16.4 or later).
+- **Design files** (`src/model`, schema version 1). The first three points were decided by the project owner:
+  - All lengths are **millimetres**.
+  - `x`/`y` is the **top-left corner of the unrotated element box**, measured from the label's trim corner (bleed lies at negative values). `rotation` is in degrees, clockwise, **around the box centre**, in the range 0 to under 360.
+  - Images are stored **once in an `assets` list** as PNG or JPEG data URLs, and image elements refer to them by id. The data URL content must match its declared type (magic bytes).
+  - Every file starts with `"format": "dl-school-wine-label"` and `"schemaVersion": 1`. Files from a newer version are refused. Older versions will be upgraded by `src/model/migrate.ts` (no migrations yet).
+  - Unknown fields are refused, so changing the format always needs a new schema version.
+  - Elements are stored back to front (later elements are drawn on top).
+  - Maximum design file size: **50 MB**. Further limits: 500 elements, 100 images, 5000 characters per text, coordinates within ±1000 mm.
+  - Default template id `blank` and bottle id `bordeaux-750`. They are placeholders until templates and bottles exist.
+  - The saved file is called `wine-label-design.json`.
 - **UI language** follows the browser language: German for any `de` locale, otherwise English. There is no language switch yet.
 - **German texts use the formal "Sie".**
 - **Playwright runs Chromium only** for now. Firefox and WebKit can be added later.
