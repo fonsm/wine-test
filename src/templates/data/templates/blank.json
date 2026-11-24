@@ -1,0 +1,12 @@
+{
+  "format": "dl-school-wine-label",
+  "schemaVersion": 1,
+  "labelSize": {
+    "widthMm": 90,
+    "heightMm": 120
+  },
+  "templateId": "blank",
+  "bottleId": "bordeaux-750",
+  "assets": {},
+  "elements": []
+}

@@ -4,6 +4,7 @@ import { editorMessages } from '../editor/messages';
 import { exportMessages } from '../export/messages';
 import { designMessages } from '../model/messages';
 import { previewMessages } from '../preview/messages';
+import { templateMessages } from '../templates/messages';
 import { uploadMessages } from '../upload/messages';
 
 export const LANGUAGES = ['de', 'en'] as const;
@@ -27,7 +28,7 @@ export function createI18n(language: Language): i18n {
     lng: language,
     fallbackLng: DEFAULT_LANGUAGE,
     supportedLngs: LANGUAGES,
-    ns: ['app', 'upload', 'design', 'editor', 'preview', 'export'],
+    ns: ['app', 'upload', 'design', 'editor', 'preview', 'export', 'templates'],
     resources: {
       en: {
         app: appMessages.en,
@@ -36,6 +37,7 @@ export function createI18n(language: Language): i18n {
         editor: editorMessages.en,
         preview: previewMessages.en,
         export: exportMessages.en,
+        templates: templateMessages.en,
       },
       de: {
         app: appMessages.de,
@@ -44,6 +46,7 @@ export function createI18n(language: Language): i18n {
         editor: editorMessages.de,
         preview: previewMessages.de,
         export: exportMessages.de,
+        templates: templateMessages.de,
       },
     },
     initAsync: false,

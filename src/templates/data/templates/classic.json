@@ -1,0 +1,181 @@
+{
+  "format": "dl-school-wine-label",
+  "schemaVersion": 1,
+  "labelSize": {
+    "widthMm": 90,
+    "heightMm": 120
+  },
+  "templateId": "classic",
+  "bottleId": "bordeaux-750",
+  "assets": {},
+  "elements": [
+    {
+      "id": "frame",
+      "type": "shape",
+      "shape": "rect",
+      "x": 4,
+      "y": 4,
+      "width": 82,
+      "height": 112,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": null,
+        "stroke": "#7b1e3a",
+        "strokeWidthMm": 0.6,
+        "cornerRadiusMm": 1.5
+      }
+    },
+    {
+      "id": "inner-frame",
+      "type": "shape",
+      "shape": "rect",
+      "x": 6,
+      "y": 6,
+      "width": 78,
+      "height": 108,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": null,
+        "stroke": "#7b1e3a",
+        "strokeWidthMm": 0.25,
+        "cornerRadiusMm": 1
+      }
+    },
+    {
+      "id": "estate",
+      "type": "text",
+      "x": 10,
+      "y": 13,
+      "width": 70,
+      "height": 7,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "Weingut Sonnenhang",
+      "style": {
+        "fontFamily": "EB Garamond",
+        "fontSizePt": 11,
+        "fontWeight": "normal",
+        "fontStyle": "italic",
+        "color": "#3a2e24",
+        "align": "center",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "shape": "line",
+      "x": 30,
+      "y": 23,
+      "width": 30,
+      "height": 1,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": null,
+        "stroke": "#7b1e3a",
+        "strokeWidthMm": 0.4,
+        "cornerRadiusMm": 0
+      }
+    },
+    {
+      "id": "variety",
+      "type": "text",
+      "x": 8,
+      "y": 36,
+      "width": 74,
+      "height": 14,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "Spätburgunder",
+      "style": {
+        "fontFamily": "Playfair Display",
+        "fontSizePt": 24,
+        "fontWeight": "bold",
+        "fontStyle": "normal",
+        "color": "#7b1e3a",
+        "align": "center",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "style",
+      "type": "text",
+      "x": 10,
+      "y": 54,
+      "width": 70,
+      "height": 7,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "Rotwein · trocken",
+      "style": {
+        "fontFamily": "EB Garamond",
+        "fontSizePt": 12,
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "color": "#3a2e24",
+        "align": "center",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "ornament",
+      "type": "shape",
+      "shape": "ellipse",
+      "x": 40,
+      "y": 68,
+      "width": 10,
+      "height": 10,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": null,
+        "stroke": "#7b1e3a",
+        "strokeWidthMm": 0.4,
+        "cornerRadiusMm": 0
+      }
+    },
+    {
+      "id": "vintage",
+      "type": "text",
+      "x": 20,
+      "y": 84,
+      "width": 50,
+      "height": 10,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "2023",
+      "style": {
+        "fontFamily": "Playfair Display",
+        "fontSizePt": 20,
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "color": "#7b1e3a",
+        "align": "center",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "details",
+      "type": "text",
+      "x": 10,
+      "y": 99,
+      "width": 70,
+      "height": 10,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "Qualitätswein · Pfalz\n13 % vol · 0,75 l",
+      "style": {
+        "fontFamily": "EB Garamond",
+        "fontSizePt": 8,
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "color": "#3a2e24",
+        "align": "center",
+        "lineHeight": 1.3
+      }
+    }
+  ]
+}

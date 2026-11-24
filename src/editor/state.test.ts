@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createEmptyDesign } from '../model/schema';
+import { createEmptyDesign, type Design } from '../model/schema';
 import { PNG_DATA_URL, sampleDesign } from '../model/testing/fixtures';
 import {
   canRedo,
@@ -177,5 +177,47 @@ describe('editorReducer', () => {
   it('ignores invalid label sizes', () => {
     const start = createEditorState(sampleDesign());
     expect(run(start, { type: 'resizeLabel', size: { widthMm: 5, heightMm: 120 } })).toBe(start);
+  });
+});
+
+describe('templates and bottles', () => {
+  const template = (): Design => ({
+    ...sampleDesign(),
+    templateId: 'classic',
+    bottleId: 'bordeaux-750',
+    labelSize: { widthMm: 100, heightMm: 100 },
+  });
+
+  it('applying a template replaces the label, keeps the chosen bottle and can be undone', () => {
+    const start = run(createEditorState(createEmptyDesign()), addText, {
+      type: 'setBottle',
+      bottleId: 'schlegel-750',
+    });
+    const applied = run(start, { type: 'applyTemplate', design: template() });
+    expect(design(applied)).toEqual({ ...template(), bottleId: 'schlegel-750' });
+    expect(applied.selectedId).toBeNull();
+
+    const undone = run(applied, { type: 'undo' });
+    expect(design(undone)).toEqual(design(start));
+  });
+
+  it('picking a bottle changes only the bottle and can be undone', () => {
+    const start = run(createEditorState(createEmptyDesign()), addText);
+    const picked = run(start, { type: 'setBottle', bottleId: 'sparkling-750' });
+    expect(design(picked)).toEqual({ ...design(start), bottleId: 'sparkling-750' });
+    expect(picked.selectedId).toBe('t1');
+    expect(design(run(picked, { type: 'undo' })).bottleId).toBe(design(start).bottleId);
+  });
+
+  it('picking the bottle that is already chosen adds no undo step', () => {
+    const start = createEditorState(createEmptyDesign());
+    const same = run(start, { type: 'setBottle', bottleId: design(start).bottleId });
+    expect(same).toBe(start);
+  });
+
+  it('refuses a template that is not a valid design', () => {
+    const start = createEditorState(createEmptyDesign());
+    const broken = { ...template(), elements: [{ id: '__proto__' }] } as unknown as Design;
+    expect(run(start, { type: 'applyTemplate', design: broken })).toBe(start);
   });
 });
