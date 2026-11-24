@@ -1,6 +1,5 @@
 import { useId, useState } from 'react';
-
-const format = (value: number) => String(Math.round(value * 100) / 100);
+import { formatNumber } from '../util/numbers';
 
 /**
  * A number input that commits every valid value while typing. Incomplete input ("", "-", "1.")
@@ -37,7 +36,7 @@ export function NumberField({
         min={min}
         max={max}
         aria-describedby={describedBy}
-        value={draft ?? format(value)}
+        value={draft ?? formatNumber(value)}
         onChange={(event) => {
           const text = event.target.value;
           setDraft(text);

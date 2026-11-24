@@ -1,33 +1,15 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { createI18n } from '../src/i18n';
 import { BLEED_MM, LABEL_HEIGHT_MM, LABEL_WIDTH_MM } from '../src/print/geometry';
+import { IMAGE_INPUT, chooseFile } from './helpers';
 
 const { t } = createI18n('en');
 
 /** Puts a canvas-generated photo into the image upload input, like a file chosen by the user. */
 async function uploadPhoto(page: Page, width: number, height: number): Promise<void> {
-  await page.evaluate(
-    async ({ width, height }) => {
-      const canvas = new OffscreenCanvas(width, height);
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('no 2d context');
-      const gradient = ctx.createLinearGradient(0, 0, width, height);
-      gradient.addColorStop(0, '#2f4f2f');
-      gradient.addColorStop(1, '#c9b27c');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-      const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.9 });
-      const input = document.querySelector<HTMLInputElement>(
-        'input[type="file"][accept^="image/"]',
-      );
-      if (!input) throw new Error('image input not found');
-      const transfer = new DataTransfer();
-      transfer.items.add(new File([blob], 'vineyard.jpg', { type: 'image/jpeg' }));
-      input.files = transfer.files;
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-    },
-    { width, height },
-  );
+  await chooseFile(page, IMAGE_INPUT, 'vineyard.jpg', 'image/jpeg', {
+    canvas: { type: 'image/jpeg', width, height },
+  });
 }
 
 const field = (page: Page, key: string) =>

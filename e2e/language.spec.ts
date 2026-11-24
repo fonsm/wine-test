@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { createI18n } from '../src/i18n';
 import { formatDesignFileError } from '../src/model/format';
+import { DESIGN_INPUT, chooseFile } from './helpers';
 
 const en = createI18n('en').t;
 const de = createI18n('de').t;
@@ -61,16 +62,7 @@ test('works with the keyboard', async ({ page }) => {
 
 test('messages already on screen switch language too', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => {
-    const input = document.querySelector<HTMLInputElement>(
-      'input[type="file"][accept=".json,application/json"]',
-    );
-    if (!input) throw new Error('design input not found');
-    const transfer = new DataTransfer();
-    transfer.items.add(new File(['[]'], 'other.json', { type: 'application/json' }));
-    input.files = transfer.files;
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-  });
+  await chooseFile(page, DESIGN_INPUT, 'other.json', 'application/json', { text: '[]' });
   const error = { code: 'NOT_A_DESIGN', params: {} } as const;
   await expect(page.getByTestId('design-file-status')).toHaveText(
     formatDesignFileError(en, error, 'other.json'),

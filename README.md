@@ -29,6 +29,7 @@ npm run test:watch  # unit tests in watch mode
 
 npx playwright install chromium   # once, to download the test browser
 npm run test:e2e                  # end-to-end tests (Playwright, against the production build)
+npm run test:e2e:chrome           # the same in installed Google Chrome (macOS 13, see below)
 
 npm run audit       # npm audit, fails on moderate or higher
 npm run licenses    # fails on unknown or copyleft dependency licenses
@@ -92,4 +93,10 @@ These were decided without confirmed requirements and can be changed:
 
 ## Known limitation
 
-Playwright 1.65 has no Chromium build for macOS 13. On such a Mac, run the end-to-end tests with an installed Google Chrome instead, using a local config that sets `channel: 'chrome'`. CI runs on Ubuntu and is not affected.
+Playwright 1.65 has no Chromium build for macOS 13. On such a Mac, run the end-to-end tests in an installed Google Chrome instead:
+
+```sh
+npm run test:e2e:chrome
+```
+
+This uses `playwright.chrome.config.ts`, which is the normal config with `channel: 'chrome'`. CI runs on Ubuntu with `npm run test:e2e` and is not affected.

@@ -2,6 +2,7 @@
 // changed) and never mutates its input. Results always pass the design schema.
 import { elementSchema, type Design, type DesignElement, type TextElement } from '../model/schema';
 import { isValidLabelSize, type LabelSize } from '../print/geometry';
+import { clamp, round2 } from '../util/numbers';
 
 /** New images are fitted into this fraction of the label (trim box), keeping their aspect ratio. */
 export const NEW_IMAGE_MAX_FRACTION = 0.8;
@@ -36,9 +37,6 @@ export interface ElementPatch {
   /** Text elements only. */
   style?: Partial<TextElement['style']>;
 }
-
-const round2 = (value: number) => Math.round(value * 100) / 100;
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 export function normalizeRotation(degrees: number): number {
   const normalized = round2(((degrees % 360) + 360) % 360);

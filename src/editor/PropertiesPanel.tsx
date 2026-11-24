@@ -1,12 +1,11 @@
-import type { TFunction } from 'i18next';
 import { useId, type Ref } from 'react';
+import { useT } from '../i18n/I18nContext';
 import { FONTS } from '../fonts/fonts';
 import type { DesignElement, TextElement } from '../model/schema';
 import { NumberField } from './NumberField';
 import type { ElementPatch, LayerDirection } from './operations';
 
 interface PropertiesPanelProps {
-  t: TFunction;
   element: DesignElement | null;
   /** `merge`: typing into a field becomes one undo step. */
   onChange: (patch: ElementPatch, merge: boolean) => void;
@@ -15,12 +14,12 @@ interface PropertiesPanelProps {
 }
 
 export function PropertiesPanel({
-  t,
   element,
   onChange,
   onReorder,
   textFieldRef,
 }: PropertiesPanelProps) {
+  const t = useT();
   const headingId = useId();
   return (
     <section className="editor-section" aria-labelledby={headingId}>
@@ -31,7 +30,7 @@ export function PropertiesPanel({
         // Re-mount per element so drafts never leak from one element to another.
         <div key={element.id} className="editor-fields">
           {element.type === 'text' && (
-            <TextFields t={t} element={element} onChange={onChange} textFieldRef={textFieldRef} />
+            <TextFields element={element} onChange={onChange} textFieldRef={textFieldRef} />
           )}
           <div className="editor-grid">
             <NumberField
@@ -98,16 +97,15 @@ export function PropertiesPanel({
 }
 
 function TextFields({
-  t,
   element,
   onChange,
   textFieldRef,
 }: {
-  t: TFunction;
   element: TextElement;
   onChange: PropertiesPanelProps['onChange'];
   textFieldRef: Ref<HTMLTextAreaElement>;
 }) {
+  const t = useT();
   const ids = { text: useId(), font: useId(), color: useId(), align: useId() };
   const { style } = element;
   const setStyle = (patch: Partial<TextElement['style']>, merge = false) => {

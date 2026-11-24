@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { LanguageSwitch } from './app/LanguageSwitch';
 import { Editor } from './editor/Editor';
-import { createI18n, DEFAULT_LANGUAGE, type Language } from './i18n';
+import { useEditorState } from './editor/useEditorState';
+import { DEFAULT_LANGUAGE, type Language } from './i18n';
+import { I18nProvider, useT } from './i18n/I18nContext';
 import { browserStorage, storeLanguage } from './i18n/storage';
 
 interface AppProps {
@@ -11,7 +13,8 @@ interface AppProps {
 
 export function App({ language: initial = DEFAULT_LANGUAGE }: AppProps) {
   const [language, setLanguage] = useState<Language>(initial);
-  const { t } = useMemo(() => createI18n(language), [language]);
+  // Lives here, not in the editor: kept across language switches and shared with other views.
+  const [editorState, dispatch] = useEditorState();
 
   function changeLanguage(next: Language) {
     setLanguage(next);
@@ -20,13 +23,27 @@ export function App({ language: initial = DEFAULT_LANGUAGE }: AppProps) {
   }
 
   return (
-    <main>
-      <header className="app-header">
-        <h1>{t('app:title')}</h1>
-        <LanguageSwitch t={t} language={language} onChange={changeLanguage} />
-      </header>
-      {/* The editor keeps its state (design, undo history) when the language changes. */}
-      <Editor t={t} />
-    </main>
+    <I18nProvider language={language}>
+      <main>
+        <Header language={language} onLanguageChange={changeLanguage} />
+        <Editor state={editorState} dispatch={dispatch} />
+      </main>
+    </I18nProvider>
+  );
+}
+
+function Header({
+  language,
+  onLanguageChange,
+}: {
+  language: Language;
+  onLanguageChange: (language: Language) => void;
+}) {
+  const t = useT();
+  return (
+    <header className="app-header">
+      <h1>{t('app:title')}</h1>
+      <LanguageSwitch language={language} onChange={onLanguageChange} />
+    </header>
   );
 }

@@ -1,5 +1,5 @@
-import type { TFunction } from 'i18next';
 import { useId, useState } from 'react';
+import { useT } from '../i18n/I18nContext';
 import {
   LABEL_SIZE_PRESETS,
   MAX_LABEL_SIZE_MM,
@@ -10,7 +10,6 @@ import {
 import { NumberField } from './NumberField';
 
 interface LabelSizePanelProps {
-  t: TFunction;
   size: LabelSize;
   /** `merge`: typing a size becomes one undo step. */
   onChange: (size: LabelSize, merge: boolean) => void;
@@ -21,7 +20,8 @@ const presetId = (size: LabelSize) => `${String(size.widthMm)}x${String(size.hei
 const sameSize = (a: LabelSize | null, b: LabelSize) =>
   a !== null && a.widthMm === b.widthMm && a.heightMm === b.heightMm;
 
-export function LabelSizePanel({ t, size, onChange }: LabelSizePanelProps) {
+export function LabelSizePanel({ size, onChange }: LabelSizePanelProps) {
+  const t = useT();
   const selectId = useId();
   const rangeId = useId();
   // The size at which the user last chose or typed a custom size. While the label still has

@@ -1,12 +1,11 @@
-import type { TFunction } from 'i18next';
 import { useId, useRef, useState, type ChangeEvent } from 'react';
+import { useT } from '../i18n/I18nContext';
 import { downloadDesign } from './download';
 import { formatDesignFileError } from './format';
 import type { Design } from './schema';
 import { readDesignFile, type DesignFileError } from './serialize';
 
 interface DesignFileControlsProps {
-  t: TFunction;
   design: Design;
   /** Called with a validated design. Not called for invalid files: the current design stays. */
   onLoad: (design: Design) => void;
@@ -18,7 +17,8 @@ type Status =
   | { kind: 'loaded'; fileName: string; count: number }
   | { kind: 'error'; fileName: string; error: DesignFileError };
 
-export function DesignFileControls({ t, design, onLoad }: DesignFileControlsProps) {
+export function DesignFileControls({ design, onLoad }: DesignFileControlsProps) {
+  const t = useT();
   const inputId = useId();
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const latestRequest = useRef(0);
