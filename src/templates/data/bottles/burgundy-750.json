@@ -1,0 +1,13 @@
+{
+  "id": "burgundy-750",
+  "heightMm": 296,
+  "bodyDiameterMm": 81,
+  "bodyTopMm": 165,
+  "neckDiameterMm": 29,
+  "neckBottomMm": 238,
+  "shoulderCurve": 0.25,
+  "labelZone": { "bottomMm": 12, "topMm": 160 },
+  "capsuleBottomMm": 252,
+  "glassColor": "#3b4a1e",
+  "capsuleColor": "#b8923a"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "sparkling-750",
+  "heightMm": 300,
+  "bodyDiameterMm": 88,
+  "bodyTopMm": 170,
+  "neckDiameterMm": 30,
+  "neckBottomMm": 235,
+  "shoulderCurve": 0.35,
+  "labelZone": { "bottomMm": 12, "topMm": 165 },
+  "capsuleBottomMm": 215,
+  "glassColor": "#22301c",
+  "capsuleColor": "#c9a43c"
+}

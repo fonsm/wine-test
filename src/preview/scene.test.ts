@@ -1,6 +1,6 @@
 import { CylinderGeometry, LatheGeometry, SRGBColorSpace, Texture } from 'three';
 import { describe, expect, it } from 'vitest';
-import { bottleShape } from '../templates/bottles';
+import { bottleShape } from '../templates/catalog';
 import { createBottleScene, type LabelImage } from './scene';
 import { labelWrap } from './wrap';
 

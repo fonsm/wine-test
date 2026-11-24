@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bottleShape } from '../templates/bottles';
+import { bottleShape } from '../templates/catalog';
 import { LABEL_GAP_MM, labelWrap } from './wrap';
 
 const bottle = bottleShape('bordeaux-750');
