@@ -17,20 +17,20 @@ Fixed decisions and working rules for this repository. Every contributor, human 
 
 ## Tech stack
 
-| Purpose            | Tool                      |
-| ------------------ | ------------------------- |
-| Language           | TypeScript (`strict`)     |
-| Build / dev server | Vite                      |
-| UI                 | React                     |
-| 2D label canvas    | Konva (`react-konva`)     |
-| 3D bottle preview  | Three.js                  |
-| Validation         | Zod                       |
-| PDF export         | pdf-lib                   |
-| i18n               | i18next                   |
-| Unit tests         | Vitest                    |
-| End-to-end tests   | Playwright                |
-| Linting            | ESLint                    |
-| Formatting         | Prettier                  |
+| Purpose            | Tool                  |
+| ------------------ | --------------------- |
+| Language           | TypeScript (`strict`) |
+| Build / dev server | Vite                  |
+| UI                 | React                 |
+| 2D label canvas    | Konva (`react-konva`) |
+| 3D bottle preview  | Three.js              |
+| Validation         | Zod                   |
+| PDF export         | pdf-lib               |
+| i18n               | i18next               |
+| Unit tests         | Vitest                |
+| End-to-end tests   | Playwright            |
+| Linting            | ESLint                |
+| Formatting         | Prettier              |
 
 Do not add any dependency not on this list without asking first (see Rules).
 
@@ -44,13 +44,13 @@ Do not add any dependency not on this list without asking first (see Rules).
 
 Label size, resolution, margins and bleed are **named constants** in one module. Never use them as magic numbers elsewhere. Calculate pixel sizes from millimetres and DPI. Do not hard-code them.
 
-| Constant         | Value  | Status                                   |
-| ---------------- | ------ | ---------------------------------------- |
-| Label width      | 90 mm  | Assumption                               |
-| Label height     | 120 mm | Assumption                               |
-| Export DPI       | 300    | Assumption                               |
-| Bleed            | 3 mm   | Assumption (common print default)        |
-| Safe margin      | 3 mm   | Assumption (common print default)        |
+| Constant     | Value  | Status                            |
+| ------------ | ------ | --------------------------------- |
+| Label width  | 90 mm  | Assumption                        |
+| Label height | 120 mm | Assumption                        |
+| Export DPI   | 300    | Assumption                        |
+| Bleed        | 3 mm   | Assumption (common print default) |
+| Safe margin  | 3 mm   | Assumption (common print default) |
 
 All assumptions must also be listed in `README.md`.
 
