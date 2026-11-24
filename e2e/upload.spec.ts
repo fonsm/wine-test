@@ -101,7 +101,9 @@ async function upload(
         bytes.set(source.bytes);
       }
 
-      const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+      const input = document.querySelector<HTMLInputElement>(
+        'input[type="file"][accept^="image/"]',
+      );
       if (!input) throw new Error('file input not found');
       const transfer = new DataTransfer();
       transfer.items.add(new File([bytes], name, { type: mimeType }));
