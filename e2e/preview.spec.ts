@@ -68,6 +68,20 @@ async function timeUntilPreviewUpdate(page: Page, buttonName: string): Promise<n
   }, buttonName);
 }
 
+/** Waits until the page has drawn two more frames and has been idle briefly. */
+async function settle(page: Page): Promise<void> {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(resolve, 250);
+          });
+        });
+      }),
+  );
+}
+
 const viewports = [
   { name: 'desktop', use: { viewport: { width: 1280, height: 900 } } },
   {
@@ -104,6 +118,9 @@ for (const { name, use } of viewports) {
       // Median of three edits, so one hiccup of a busy test machine does not decide.
       const times: number[] = [];
       for (let edit = 0; edit < 3; edit++) {
+        // Each edit starts from a settled preview, like a user's next edit: the previous frame
+        // is on screen. Otherwise a slow software renderer (CI has no GPU) is still busy with it.
+        await settle(page);
         times.push(await timeUntilPreviewUpdate(page, t('editor:addText')));
       }
       await cdp?.send('Emulation.setCPUThrottlingRate', { rate: 1 });

@@ -13,6 +13,7 @@ test('shows the flat preview with an explanation when WebGL is disabled', async 
   await page.goto('/');
   const preview = page.getByTestId('bottle-preview');
   await expect(preview).toHaveAttribute('data-mode', 'flat');
+  await expect(preview).toHaveAttribute('data-fallback', 'webgl');
   await expect(preview.getByRole('status')).toHaveText(t('preview:fallbackNoWebgl'));
   const flat = preview.getByRole('img', { name: t('preview:flatLabel') });
   await expect(flat).toBeVisible();
