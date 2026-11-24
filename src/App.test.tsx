@@ -7,4 +7,10 @@ describe('App', () => {
     const html = renderToStaticMarkup(<App />);
     expect(html).toContain('<h1>Wine Label Designer</h1>');
   });
+
+  it('renders the German heading and language switch in German', () => {
+    const html = renderToStaticMarkup(<App language="de" />);
+    expect(html).toContain('<h1>Weinetiketten-Designer</h1>');
+    expect(html).toContain('aria-label="Sprache"');
+  });
 });

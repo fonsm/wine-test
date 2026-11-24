@@ -83,7 +83,7 @@ These were decided without confirmed requirements and can be changed:
   - **Layout**: one column below 900 px width, canvas with a side panel above.
   - Shapes from design files are shown, but there is no tool to add shapes yet.
   - The JavaScript bundle is about 730 kB (225 kB gzipped), mostly Konva. Vite warns about the size; code splitting can come later.
-- **UI language** follows the browser language: German for any `de` locale, otherwise English. There is no language switch yet.
+- **UI language**: a **DE | EN** switch in the header. The first visit follows the browser language (German for any `de` locale, otherwise English). The choice is remembered in this browser's `localStorage` under `wine-label.language` (value `de` or `en`, nothing else; decided by the project owner). No cookie is set and nothing is sent anywhere. If storage is blocked, the switch still works until the page is reloaded. Switching keeps the design and its undo history.
 - **German texts use the formal "Sie".**
 - **Playwright runs Chromium only** for now. Firefox and WebKit can be added later.
 - **The dependency audit fails on moderate or higher** findings, for both production and dev dependencies.
