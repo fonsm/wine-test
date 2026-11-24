@@ -46,6 +46,9 @@ export type EditorAction =
   | { type: 'select'; id: string | null }
   | { type: 'undo' }
   | { type: 'redo' }
+  /** Replaces the label with a template (one undo step); the chosen bottle stays. */
+  | { type: 'applyTemplate'; design: Design }
+  | { type: 'setBottle'; bottleId: string }
   /** Replaces the design (opened from a file) and starts a fresh history. */
   | { type: 'load'; design: Design };
 
@@ -112,6 +115,14 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return withHistory(state, undo(state.history));
     case 'redo':
       return withHistory(state, redo(state.history));
+    case 'applyTemplate': {
+      const next = { ...action.design, bottleId: design.bottleId };
+      if (!designSchema.safeParse(next).success) return state;
+      return withHistory(state, commit(state.history, next), null);
+    }
+    case 'setBottle':
+      if (action.bottleId === design.bottleId) return state;
+      return withHistory(state, commit(state.history, { ...design, bottleId: action.bottleId }));
     case 'load':
       return createEditorState(action.design);
   }

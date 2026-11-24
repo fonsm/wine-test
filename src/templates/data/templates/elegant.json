@@ -1,0 +1,144 @@
+{
+  "format": "dl-school-wine-label",
+  "schemaVersion": 1,
+  "labelSize": {
+    "widthMm": 90,
+    "heightMm": 120
+  },
+  "templateId": "elegant",
+  "bottleId": "bordeaux-750",
+  "assets": {},
+  "elements": [
+    {
+      "id": "background",
+      "type": "shape",
+      "shape": "rect",
+      "x": -3,
+      "y": -3,
+      "width": 96,
+      "height": 126,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": "#1d1a2b",
+        "stroke": null,
+        "strokeWidthMm": 0,
+        "cornerRadiusMm": 0
+      }
+    },
+    {
+      "id": "ring",
+      "type": "shape",
+      "shape": "ellipse",
+      "x": 9,
+      "y": 18,
+      "width": 72,
+      "height": 72,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": null,
+        "stroke": "#c9a43c",
+        "strokeWidthMm": 0.5,
+        "cornerRadiusMm": 0
+      }
+    },
+    {
+      "id": "variety",
+      "type": "text",
+      "x": 6,
+      "y": 42,
+      "width": 78,
+      "height": 16,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "Grauburgunder",
+      "style": {
+        "fontFamily": "Great Vibes",
+        "fontSizePt": 30,
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "color": "#c9a43c",
+        "align": "center",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "quality",
+      "type": "text",
+      "x": 10,
+      "y": 60,
+      "width": 70,
+      "height": 7,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "Spätlese",
+      "style": {
+        "fontFamily": "EB Garamond",
+        "fontSizePt": 12,
+        "fontWeight": "normal",
+        "fontStyle": "italic",
+        "color": "#f2e6c9",
+        "align": "center",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "shape": "line",
+      "x": 35,
+      "y": 96,
+      "width": 20,
+      "height": 1,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": null,
+        "stroke": "#c9a43c",
+        "strokeWidthMm": 0.3,
+        "cornerRadiusMm": 0
+      }
+    },
+    {
+      "id": "vintage",
+      "type": "text",
+      "x": 20,
+      "y": 100,
+      "width": 50,
+      "height": 8,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "2022",
+      "style": {
+        "fontFamily": "EB Garamond",
+        "fontSizePt": 16,
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "color": "#f2e6c9",
+        "align": "center",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "estate",
+      "type": "text",
+      "x": 10,
+      "y": 110,
+      "width": 70,
+      "height": 5,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "Weingut Sonnenhang · Baden",
+      "style": {
+        "fontFamily": "EB Garamond",
+        "fontSizePt": 8,
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "color": "#c9a43c",
+        "align": "center",
+        "lineHeight": 1.2
+      }
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "format": "dl-school-wine-label",
+  "schemaVersion": 1,
+  "labelSize": {
+    "widthMm": 90,
+    "heightMm": 120
+  },
+  "templateId": "modern",
+  "bottleId": "bordeaux-750",
+  "assets": {},
+  "elements": [
+    {
+      "id": "background",
+      "type": "shape",
+      "shape": "rect",
+      "x": -3,
+      "y": -3,
+      "width": 96,
+      "height": 126,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": "#f4efe6",
+        "stroke": null,
+        "strokeWidthMm": 0,
+        "cornerRadiusMm": 0
+      }
+    },
+    {
+      "id": "band",
+      "type": "shape",
+      "shape": "rect",
+      "x": -3,
+      "y": -3,
+      "width": 30,
+      "height": 126,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": "#1f3a24",
+        "stroke": null,
+        "strokeWidthMm": 0,
+        "cornerRadiusMm": 0
+      }
+    },
+    {
+      "id": "variety",
+      "type": "text",
+      "x": -43,
+      "y": 53,
+      "width": 110,
+      "height": 14,
+      "rotation": 270,
+      "opacity": 1,
+      "text": "RIESLING",
+      "style": {
+        "fontFamily": "Inter",
+        "fontSizePt": 26,
+        "fontWeight": "bold",
+        "fontStyle": "normal",
+        "color": "#f4efe6",
+        "align": "center",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "vintage",
+      "type": "text",
+      "x": 34,
+      "y": 12,
+      "width": 52,
+      "height": 13,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "2023",
+      "style": {
+        "fontFamily": "Inter",
+        "fontSizePt": 28,
+        "fontWeight": "bold",
+        "fontStyle": "normal",
+        "color": "#1f3a24",
+        "align": "left",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "rule",
+      "type": "shape",
+      "shape": "line",
+      "x": 34,
+      "y": 29,
+      "width": 40,
+      "height": 1,
+      "rotation": 0,
+      "opacity": 1,
+      "style": {
+        "fill": null,
+        "stroke": "#1f3a24",
+        "strokeWidthMm": 0.5,
+        "cornerRadiusMm": 0
+      }
+    },
+    {
+      "id": "estate",
+      "type": "text",
+      "x": 34,
+      "y": 35,
+      "width": 52,
+      "height": 6,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "Weingut Sonnenhang",
+      "style": {
+        "fontFamily": "Inter",
+        "fontSizePt": 10,
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "color": "#1f3a24",
+        "align": "left",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "region",
+      "type": "text",
+      "x": 34,
+      "y": 42,
+      "width": 52,
+      "height": 6,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "Mosel",
+      "style": {
+        "fontFamily": "Inter",
+        "fontSizePt": 10,
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "color": "#1f3a24",
+        "align": "left",
+        "lineHeight": 1.2
+      }
+    },
+    {
+      "id": "details",
+      "type": "text",
+      "x": 34,
+      "y": 101,
+      "width": 52,
+      "height": 12,
+      "rotation": 0,
+      "opacity": 1,
+      "text": "trocken\n12 % vol · 0,75 l",
+      "style": {
+        "fontFamily": "Inter",
+        "fontSizePt": 8,
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "color": "#1f3a24",
+        "align": "left",
+        "lineHeight": 1.4
+      }
+    }
+  ]
+}

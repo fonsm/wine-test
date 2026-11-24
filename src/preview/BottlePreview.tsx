@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useT } from '../i18n/I18nContext';
 import type { Design } from '../model/schema';
 import { LabelRenderer, prepareDesign } from '../render/renderLabel';
-import { bottleShape } from './bottles';
+import { bottleShape } from '../templates/catalog';
 import { drawFlatPreview } from './flat';
 import { chooseQuality } from './performance';
 import { PreviewSection, type PreviewMode } from './PreviewSection';
@@ -142,7 +142,7 @@ export default function BottlePreview({ design }: { design: Design }) {
 
   const message = reason === 'slow' ? t('preview:fallbackSlow') : t('preview:fallbackNoWebgl');
   return (
-    <PreviewSection mode={mode} fallback={reason} sectionRef={sectionRef}>
+    <PreviewSection mode={mode} bottleId={bottle.id} fallback={reason} sectionRef={sectionRef}>
       {mode === 'loading' && <p className="editor-hint">{t('preview:loading')}</p>}
       {reason && (
         <p role="status" className="bottle-preview-message">

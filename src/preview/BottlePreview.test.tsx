@@ -16,6 +16,7 @@ describe('BottlePreview', () => {
     const html = render(<BottlePreview design={createEmptyDesign()} />, 'de');
     expect(html).toContain(`>${t('preview:title')}</h2>`);
     expect(html).toContain('data-mode="loading"');
+    expect(html).toContain('data-bottle="bordeaux-750"');
     expect(html).toContain(t('preview:loading'));
   });
 

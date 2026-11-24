@@ -1,6 +1,6 @@
 // The 2D fallback when WebGL is missing or too slow: the bottle seen straight from the front,
 // with the label drawn as it curves around the glass. Plain Canvas 2D, no WebGL.
-import type { BottleShape } from './bottles';
+import type { BottleShape } from '../templates/bottles';
 import type { LabelWrap } from './wrap';
 
 /** Empty space around the bottle, in millimetres. */

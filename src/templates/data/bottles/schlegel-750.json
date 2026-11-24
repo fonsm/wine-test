@@ -1,0 +1,13 @@
+{
+  "id": "schlegel-750",
+  "heightMm": 350,
+  "bodyDiameterMm": 74,
+  "bodyTopMm": 175,
+  "neckDiameterMm": 28,
+  "neckBottomMm": 285,
+  "shoulderCurve": 0.15,
+  "labelZone": { "bottomMm": 12, "topMm": 170 },
+  "capsuleBottomMm": 305,
+  "glassColor": "#5a3a17",
+  "capsuleColor": "#a9a9a9"
+}
