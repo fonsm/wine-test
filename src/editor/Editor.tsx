@@ -1,8 +1,7 @@
 import type { TFunction } from 'i18next';
-import { useId, useReducer, useRef, type KeyboardEvent } from 'react';
+import { useId, useRef, type KeyboardEvent } from 'react';
 import { DEFAULT_FONT_FAMILY } from '../fonts/fonts';
 import { DesignFileControls } from '../model/DesignFileControls';
-import { createEmptyDesign, type Design } from '../model/schema';
 import { UploadField } from '../upload/UploadField';
 import type { CleanImage } from '../upload/types';
 import './editor.css';
@@ -12,7 +11,8 @@ import { LabelSizePanel } from './LabelSizePanel';
 import { LayersPanel } from './LayersPanel';
 import type { ElementPatch } from './operations';
 import { PropertiesPanel } from './PropertiesPanel';
-import { canRedo, canUndo, createEditorState, editorReducer, selectedElement } from './state';
+import { canRedo, canUndo, selectedElement, type EditorState } from './state';
+import type { EditorDispatch } from './useEditorState';
 
 const NUDGE_MM = 1;
 const NUDGE_LARGE_MM = 10;
@@ -34,13 +34,12 @@ function isFormField(target: EventTarget): boolean {
 
 interface EditorProps {
   t: TFunction;
-  initialDesign?: Design;
+  /** Document state from useEditorState, owned by the app. */
+  state: EditorState;
+  dispatch: EditorDispatch;
 }
 
-export function Editor({ t, initialDesign }: EditorProps) {
-  const [state, dispatch] = useReducer(editorReducer, initialDesign ?? null, (design) =>
-    createEditorState(design ?? createEmptyDesign()),
-  );
+export function Editor({ t, state, dispatch }: EditorProps) {
   const design = state.history.present;
   const selected = selectedElement(state);
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
