@@ -26,3 +26,27 @@ License texts: `src/assets/fonts/OFL-PlayfairDisplay.txt`, `OFL-EBGaramond.txt`,
 | Template thumbnails | `src/templates/thumbnails/*.png`                                              | Rendered from the label templates above with `npm run thumbnails` | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)                                | Not required |
 
 The templates contain only text and shapes, no images (decided by the project owner). They use only the fonts listed above. The winery name "Weingut Sonnenhang" and all other sample texts are made up. The bottle shapes are drawn from typical outer dimensions of standard 750 ml bottles, not copied from any manufacturer's drawing.
+
+## Other
+
+- **PDF standard font**: the calibration page uses Helvetica, one of the 14 standard PDF fonts. It is referenced by name and **not embedded**; the PDF viewer or printer supplies it. No font file is shipped for it.
+- **Page icon**: an empty `data:` URL (no icon file), so the browser does not request `/favicon.ico`.
+- There are **no other images, icons, sounds, 3D models or fonts** in the app. The 3D bottles are drawn from the bottle shape parameters above; the bottle silhouettes in the gallery are drawn as SVG from the same data.
+
+## Code libraries shipped in the app
+
+These npm packages end up in the built JavaScript (`dist/assets/*.js`). All dependency licences, including development tools, are checked by `npm run licenses` (see `scripts/policy.mjs`).
+
+| Package                                         | Version (first package) | Used for                     | License      |
+| ----------------------------------------------- | ----------------------- | ---------------------------- | ------------ |
+| react, react-dom, scheduler                     | 19.3.1                  | User interface               | MIT          |
+| react-konva, react-reconciler, its-fine         | 19.3.2                  | Label canvas (React binding) | MIT          |
+| konva                                           | 10.9.1                  | Label canvas                 | MIT          |
+| three                                           | 0.187.0                 | 3D bottle preview            | MIT          |
+| zod                                             | 4.6.7                   | Validation of files and data | MIT          |
+| i18next                                         | 26.7.2                  | German and English texts     | MIT          |
+| pdf-lib, @pdf-lib/standard-fonts, @pdf-lib/upng | 1.17.1                  | PDF export                   | MIT          |
+| pako (used by pdf-lib)                          | 1.0.11                  | Compression in PDFs          | MIT and Zlib |
+| tslib (used by pdf-lib)                         | 1.14.1                  | TypeScript helpers           | 0BSD         |
+
+The MIT, Zlib and BSD-style licences ask that their copyright and licence notices are included with copies of the software. The build does not ship these notices yet; see "Open issues" in README.md.

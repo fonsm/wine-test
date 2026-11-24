@@ -1,6 +1,17 @@
-# Manual test: printing at true size
+# Manual tests
 
-Automated tests check that the PDF itself has the right sizes (within 0.01 mm). They cannot check what a real printer does with it. These steps do. Repeat them on every printer you want to support, and write the results in the table at the end.
+The automated tests (see the checklist in README.md) cover the app in Chromium, including the PDF sizes to 0.01 mm, privacy, accessibility rules and a 320 px phone. Some things only real hardware can show. This document covers them:
+
+- **Part A: printing at true size**, on **3 different printers** (sections 1–6)
+- **Part B: the label on a real bottle**, compared with the 3D preview (section 7)
+- **Part C: devices and browsers**: iOS Safari, Android Chrome and a desktop browser (section 8)
+- **Part D: screen reader spot check** (section 9)
+
+Write the results in the tables at the end. A release needs every row passed, or a written finding.
+
+# Part A: printing at true size
+
+Automated tests check that the PDF itself has the right sizes. They cannot check what a printer does with it. Do sections 1–6 on **at least 3 printers of different kinds**, for example a home inkjet, an office laser printer and a multifunction device or print-shop machine. Use at least two different computers or programs to print.
 
 ## You need
 
@@ -66,12 +77,95 @@ On one printer, print the calibration page once **with "Fit to page" turned on**
 1. Upload a small photo (for example 300 × 200 pixels) and make it large on the label.
 2. Download the PDF. Below the buttons, the app should say that **1 image has less than 300 dpi** and may look blurry. Print it and compare: the warning should match what you see.
 
-## Results
+# Part B: the label on a real bottle
 
-Copy one row per printer and setting.
+## 7. Compare a printed label with the 3D preview
 
-| Date | Printer (model) | Paper | Computer + OS | Program used to print | Settings (scale, fit, borderless) | Square W × H (mm) | Ruler 0–15 (mm) | Label crop marks W × H (mm) | Pass? | Notes |
-| ---- | --------------- | ----- | ------------- | --------------------- | --------------------------------- | ----------------- | --------------- | --------------------------- | ----- | ----- |
-|      |                 | A4    |               |                       | 100 %, fit off                    |                   |                 |                             |       |       |
+You need a real **750 ml Bordeaux bottle** (straight sides, high shoulders) and, if available, a Burgundy, a Schlegel (Riesling) and a sparkling wine bottle. Clean, dry glass; a little tape.
 
-Report any failed row (with a photo of the measured printout, if possible), so the instructions or the PDF can be improved.
+1. In the app, pick the **Classic** template and the **Bordeaux** bottle. Keep the label at **90 × 120 mm**.
+2. Print the label for your own printer (section 4: 100 %, bleed on) and cut it out along the crop marks.
+3. Stick it on the bottle, centred on the front, with its lower edge **about 44 mm above the base**. That is where the preview places a 120 mm label: centred on the straight part of the body, 12–196 mm above the base.
+4. Turn the 3D preview to the front (drag sideways) and compare with the real bottle from the same angle, at arm's length:
+   - The label covers about the same part of the bottle's width: on a 76 mm Bordeaux, a 90 mm label wraps around a bit more than a third of the circumference (about 135°).
+   - The curve looks the same: the left and right edges of the label are squeezed in the same way on screen and on the glass.
+   - The height on the bottle matches: the same gap to the base and to the shoulder.
+   - Texts that are readable on the real bottle at arm's length are also clear in the preview (on a phone, zoom the page if needed).
+5. Turn the bottle (real and preview) by about 45° to each side. The label edge should disappear at about the same angle.
+6. Take a photo of the real bottle and a screenshot of the preview from the front, and attach both to the results.
+7. Repeat steps 1–6 for every other bottle type you have, choosing that bottle in the app.
+
+Findings to note: a label that is clearly higher or lower, wider or narrower, or more or less curved than in the preview; colours that look very different (the preview uses screen RGB, the print uses the printer's inks, so some difference is expected).
+
+# Part C: devices and browsers
+
+## 8. Full flow on iOS Safari, Android Chrome and a desktop browser
+
+Test on these three, at least:
+
+- **iOS Safari**: an iPhone with a current iOS (Safari 16.4 or later is required).
+- **Android Chrome**: a mid-range Android phone (not the newest flagship), current Chrome.
+- **Desktop browser**: one of Chrome, Edge, Firefox or Safari on Windows or macOS. Better: one Chromium browser (covered by the automated tests) and Firefox or Safari (not covered).
+
+On each device, open the deployed site (or the dev server on your network: `npm run dev -- --host`, then the shown network address) and check:
+
+| #   | Step                                                                                                           | Expected                                                                                                                                            |
+| --- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Open the site with the device language set to German, then to English (or a private window each time)          | The interface starts in the device language; the browser tab title matches (Weinetiketten-Designer / Wine Label Designer).                          |
+| 2   | First load on mobile data, not Wi-Fi                                                                           | The editor is usable within a few seconds; the bottle preview follows.                                                                              |
+| 3   | Switch DE ↔ EN                                                                                                 | All texts change; the design stays. After a reload the chosen language stays.                                                                       |
+| 4   | Pick the **Modern** template, then **Undo**                                                                    | The label changes; Undo brings the previous label back.                                                                                             |
+| 5   | On a phone: drag, resize (corner handle) and rotate (round handle) an element with one finger                  | Works smoothly; the page does not scroll while dragging an element; scrolling and pinch-zoom still work on empty areas.                             |
+| 6   | Select a text and change it in **Properties**                                                                  | The label and the 3D bottle show the new text within about a second.                                                                                |
+| 7   | Pick each bottle                                                                                               | The 3D preview shows that bottle. Drag sideways on it: it turns; a vertical swipe on a phone scrolls the page.                                      |
+| 8   | Upload a photo from the photo library. **On iPhone, use a photo taken with the camera** (often HEIC)           | Accepted (the browser converts HEIC to JPEG) or refused with a clear message. Note which. A photo taken in portrait orientation appears upright.    |
+| 9   | Upload a screenshot (PNG) and, if you have one, a WebP image                                                   | Accepted.                                                                                                                                           |
+| 10  | **Download PDF** (own printer layout) and **Download calibration page**                                        | Both files download and open in the device's PDF viewer. On iOS, "Share → Save to Files" works.                                                     |
+| 11  | Print the calibration page from the device (AirPrint / Android print service) at 100 %                         | Measure as in section 1; note the result. Phones often scale to fit by default: note how to turn it off on that device.                             |
+| 12  | **Save design**, reload the page, **Open design** with the saved file                                          | The design comes back completely, including photos.                                                                                                 |
+| 13  | Rotate the phone to landscape and back                                                                         | The layout adapts; nothing is cut off and the page does not scroll sideways.                                                                        |
+| 14  | Turn on airplane mode after the page has loaded, then download a PDF                                           | Note what happens. Expected today: if the PDF code was not loaded yet, the app shows "The PDF could not be created" (see Open issues in README.md). |
+| 15  | Desktop only: use the whole app with the keyboard only (Tab, Shift+Tab, Enter, Space, arrow keys on the label) | Every control is reachable with a visible focus ring; elements can be moved with the arrow keys.                                                    |
+| 16  | If the 3D preview shows a flat bottle with a message                                                           | Note the device and the message (WebGL off or too slow). The flat preview must still update with edits.                                             |
+
+# Part D: screen reader
+
+## 9. Spot check with VoiceOver (iOS or macOS) or NVDA (Windows)
+
+1. Go through the page with the screen reader's next-element command. Every button, field and list has a sensible name in the current language; the label canvas is announced as "Label" / "Etikett" with its help text.
+2. Pick a template and a bottle: the selected ones are announced as selected (pressed).
+3. Select a text in the layer list, change it in Properties, and listen to the field names.
+4. Upload an invalid file (for example a PDF renamed to `.jpg`): the error message is read out.
+5. Download a PDF: the status "The PDF was created." is read out.
+
+# Results
+
+## Printers (Part A): at least 3 rows
+
+| Date | Printer (model, kind) | Paper | Computer + OS | Program used to print | Settings (scale, fit, borderless) | Square W × H (mm) | Ruler 0–15 (mm) | Label crop marks W × H (mm) | Pass? | Notes |
+| ---- | --------------------- | ----- | ------------- | --------------------- | --------------------------------- | ----------------- | --------------- | --------------------------- | ----- | ----- |
+|      | Printer 1:            | A4    |               |                       | 100 %, fit off                    |                   |                 |                             |       |       |
+|      | Printer 2:            | A4    |               |                       | 100 %, fit off                    |                   |                 |                             |       |       |
+|      | Printer 3:            | A4    |               |                       | 100 %, fit off                    |                   |                 |                             |       |       |
+
+## Real bottles (Part B)
+
+| Date | Bottle (type, height × diameter) | App bottle | Label position matches? | Width and curve match? | Photo + screenshot attached? | Pass? | Notes |
+| ---- | -------------------------------- | ---------- | ----------------------- | ---------------------- | ---------------------------- | ----- | ----- |
+|      |                                  | Bordeaux   |                         |                        |                              |       |       |
+
+## Devices (Part C): one row per device, steps 1–16
+
+| Date | Device + OS version | Browser + version | Steps passed | Steps failed (number + what happened) | Notes |
+| ---- | ------------------- | ----------------- | ------------ | ------------------------------------- | ----- |
+|      | iPhone:             | Safari            |              |                                       |       |
+|      | Android phone:      | Chrome            |              |                                       |       |
+|      | Desktop:            |                   |              |                                       |       |
+
+## Screen reader (Part D)
+
+| Date | Screen reader + OS | Browser | Pass? | Notes |
+| ---- | ------------------ | ------- | ----- | ----- |
+|      |                    |         |       |       |
+
+Report every failed row with a photo or screenshot if possible, so the app, the PDF or these instructions can be improved.

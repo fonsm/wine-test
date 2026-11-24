@@ -104,6 +104,9 @@ test("full flow: only the app's own files are loaded, nothing about the user is 
     timeout: 20_000,
   });
 
+  // Nothing is stored until the user uses the language switch.
+  expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([]);
+
   // Template, own text, bottle, photo.
   await page
     .getByRole('group', { name: t('templates:templates') })

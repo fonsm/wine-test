@@ -2,9 +2,21 @@
 
 A free, browser-based wine label designer (MVP) by DL-School, with a German and English UI.
 
-Everything runs in your browser. There is no backend, no account, no analytics and no cookies. Your photos, text and designs never leave your device.
+Everything runs in your browser. There is no backend, no account, no analytics and no cookies. Your photos, text and designs never leave your device (see [PRIVACY-NOTES.md](PRIVACY-NOTES.md)).
 
-Project rules and fixed decisions are in [AGENTS.md](AGENTS.md). Font and asset licenses are in [LICENSES.md](LICENSES.md).
+- Project rules and fixed decisions: [AGENTS.md](AGENTS.md)
+- Fonts, assets and shipped libraries: [LICENSES.md](LICENSES.md)
+- What data is processed: [PRIVACY-NOTES.md](PRIVACY-NOTES.md)
+- Tests on real printers, bottles and devices: [MANUAL-TEST.md](MANUAL-TEST.md)
+
+## What it does
+
+1. **Design a label** on a canvas at true size (default 90 × 120 mm, with 3 mm bleed and safe margin): text with four bundled fonts, photos (PNG, JPEG, WebP; metadata removed), and shapes from the templates. Drag, resize, rotate, snap, layers, undo/redo; mouse, touch and keyboard.
+2. **Start from a template** (Classic, Elegant, Modern, or empty) and **pick a bottle** (Bordeaux, Burgundy, Schlegel, Sparkling).
+3. **See it on the bottle** in a live 3D preview, or a flat preview if 3D is not available.
+4. **Save and open designs** as `.json` files on your device.
+5. **Print**: a PDF at true size, for your own printer (A4 with crop marks) or for a print shop (label size with bleed), plus a calibration page to check the printer's scale.
+6. **German or English**, following the browser language, with a switch.
 
 ## Requirements
 
@@ -33,12 +45,14 @@ npm run test:e2e:chrome           # the same in installed Google Chrome (macOS 1
 
 npm run audit       # npm audit, fails on moderate or higher
 npm run licenses    # fails on unknown or copyleft dependency licenses
+
+npm run thumbnails  # render the template thumbnails again after changing a template
 ```
 
 ## Build
 
 ```sh
-npm run build     # type check, build to dist/, then check dist/ holds static files only
+npm run build     # type check, build to dist/, check dist/ holds static files only, check file sizes
 npm run preview   # serve dist/ locally at http://localhost:4173
 ```
 
@@ -47,6 +61,55 @@ npm run preview   # serve dist/ locally at http://localhost:4173
 ## CI
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on every pull request. It runs lint, the type check, unit tests, the dependency audit, the license scan, the build with the static-output check, and the Playwright tests.
+
+## Project structure
+
+```text
+src/
+  app/        header and language switch
+  editor/     label editor: canvas (Konva), panels, state with undo/redo
+  export/     PDF export (pdf-lib): layout plan, writer, calibration page
+  fonts/      bundled fonts (files in src/assets/fonts/)
+  i18n/       i18next setup, language detection and storage, translation checks
+  model/      design data model (Zod schema), save/open, migrations
+  preview/    3D bottle preview (Three.js, loaded lazily) and flat fallback
+  print/      print geometry: label size, DPI, bleed, margins, PDF units
+  render/     drawing a label without editor overlays (shared by preview, export, thumbnails)
+  templates/  template and bottle data files, loader, gallery, thumbnails
+  upload/     image upload: type check by content, limits, metadata removal
+e2e/          Playwright tests
+scripts/      licence, static-output and bundle-size checks; thumbnail rendering
+```
+
+## Success criteria and how they are checked
+
+Built from the fixed decisions in AGENTS.md and the "Done when" of each feature prompt. "CI" means the check runs in GitHub Actions on every pull request. Manual checks are in MANUAL-TEST.md.
+
+| #   | Criterion                                                                                         | Automated check                                                                                                                                                    | Manual check                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| 1   | Fully client-side; the build is static files only                                                 | `scripts/check-static-output.mjs` (in `npm run build`, CI)                                                                                                         | —                                                                                                    |
+| 2   | No analytics, tracking or cookies                                                                 | `e2e/privacy.spec.ts` (cookies, storage, service workers, requests)                                                                                                | —                                                                                                    |
+| 3   | No user data leaves the browser; no third-party requests                                          | `e2e/privacy.spec.ts` (full flow; fails on another origin or user data in any request); origin checks in the `upload`, `design-file`, `preview` and `export` specs | Part C step 2 (real network)                                                                         |
+| 4   | Only the listed stack; dependency licences permissive                                             | `npm run licenses`, `npm run audit` (CI); reviewed exceptions in `scripts/policy.mjs`                                                                              | Review of `package.json` in each pull request                                                        |
+| 5   | Images: PNG, JPEG, WebP only, checked by content; SVG blocked                                     | `src/upload/*.test.ts`, `e2e/upload.spec.ts`                                                                                                                       | Part C steps 8–9                                                                                     |
+| 6   | Print geometry as named constants in one module                                                   | `src/print/geometry.test.ts`; lengths in the PDF from that module                                                                                                  | Code review                                                                                          |
+| 7   | Open-licensed fonts and assets, each in LICENSES.md                                               | `src/templates/templates.test.ts` (templates use bundled fonts only, no images); thumbnail tests                                                                   | Review of LICENSES.md (every file in `src/assets`, `src/templates/data`, `src/templates/thumbnails`) |
+| 8   | Every UI string in German and English; no hard-coded text                                         | `src/i18n/coverage.test.ts`, `messages.test.ts` per area                                                                                                           | Part C steps 1, 3                                                                                    |
+| 9   | Tests first; no weakened tests; small commits; lint and strict types                              | ESLint, Prettier, `tsc` (CI)                                                                                                                                       | Pull request review                                                                                  |
+| 10  | CI passes on a clean clone                                                                        | GitHub Actions (`npm ci`, all checks)                                                                                                                              | —                                                                                                    |
+| 11  | Upload: size and pixel limits, decode check, EXIF removed, typed errors in DE/EN                  | `src/upload/*.test.ts`, `e2e/upload.spec.ts`                                                                                                                       | Part C step 8 (camera photo upright, HEIC)                                                           |
+| 12  | Design files: schema version, migration, save and open                                            | `src/model/*.test.ts`, `e2e/design-file.spec.ts`, `e2e/privacy.spec.ts` (round trip)                                                                               | Part C step 12                                                                                       |
+| 13  | Editor works on desktop and phone (drag, resize, rotate, layers, snapping, undo, keyboard, touch) | `src/editor/*.test.ts`, `e2e/editor.spec.ts`, `e2e/keyboard.spec.ts`                                                                                               | Part C steps 4–6, 15                                                                                 |
+| 14  | Edits appear on the 3D bottle within about 300 ms; orbit by dragging                              | `e2e/preview.spec.ts` (median of 3 edits, 4× slower CPU), `src/preview/*.test.ts`                                                                                  | Part C steps 6–7 (mid-range phone)                                                                   |
+| 15  | 2D fallback when WebGL is off or too slow; resources disposed                                     | `e2e/preview-fallback.spec.ts`, `src/preview/scene.test.ts`, `performance.test.ts`                                                                                 | Part C step 16                                                                                       |
+| 16  | PDF at true size; images at the right DPI; instructions before download                           | `src/export/*.test.ts` (sizes within 0.01 mm), `e2e/export.spec.ts`                                                                                                | Part A, sections 4–6 on 3 printers                                                                   |
+| 17  | Calibration page: known square and ruler                                                          | `src/export/pdf.test.ts`                                                                                                                                           | Part A, sections 1–3                                                                                 |
+| 18  | Templates and bottles: validated data files, at least 3 each; picking updates editor and preview  | `src/templates/*.test.ts`, `e2e/gallery.spec.ts`                                                                                                                   | Part B (real bottle)                                                                                 |
+| 19  | Keyboard access, focus order, visible focus, labels, contrast; small phone                        | `e2e/a11y.spec.ts` (axe, WCAG 2.2 AA), `e2e/keyboard.spec.ts`, `src/contrast.test.ts`, `e2e/flow.spec.ts` (320 px)                                                 | Part C step 15, Part D (screen reader)                                                               |
+| 20  | Full flow works in both languages                                                                 | `e2e/flow.spec.ts`, `e2e/language.spec.ts`                                                                                                                         | Part C                                                                                               |
+| 21  | No console errors                                                                                 | `e2e/fixtures.ts`: every Playwright test fails on a console error                                                                                                  | —                                                                                                    |
+| 22  | Bundle size and first load                                                                        | `scripts/check-bundle-size.mjs` (in the build, CI), `e2e/first-load.spec.ts`                                                                                       | Part C step 2                                                                                        |
+| 23  | Prints and looks right on real hardware                                                           | —                                                                                                                                                                  | MANUAL-TEST.md Parts A–D                                                                             |
 
 ## Assumptions
 
@@ -72,10 +135,10 @@ These were decided without confirmed requirements and can be changed:
   - Unknown fields are refused, so changing the format always needs a new schema version.
   - Elements are stored back to front (later elements are drawn on top).
   - Maximum design file size: **50 MB**. Further limits: 500 elements, 100 images, 5000 characters per text, coordinates within ±1000 mm.
-  - Default template id `blank` and bottle id `bordeaux-750`. They are placeholders until templates and bottles exist.
+  - New designs use the template id `blank` and the bottle id `bordeaux-750`.
   - The saved file is called `wine-label-design.json`.
 - **Editor** (`src/editor`):
-  - **Fonts** (decided by the project owner): four bundled OFL fonts, Playfair Display (default), EB Garamond, Inter and Great Vibes. They are TTF files from the Google Fonts repository (upstream publishes no WOFF2; TTF can also be embedded in the PDF export later). They add about 4.4 MB to the build, but the browser only downloads a font when a text uses it. Designs that name another font (for example `serif`) still open and use a generic fallback.
+  - **Fonts** (decided by the project owner): four bundled OFL fonts, Playfair Display (default), EB Garamond, Inter and Great Vibes. They are TTF files from the Google Fonts repository (upstream publishes no WOFF2). They add about 4.4 MB to the build, but the browser only downloads a font when a label uses it (tested in `e2e/first-load.spec.ts`). Designs that name another font (for example `serif`) still open and use a generic fallback.
   - The design is the editor's only document state. Selection is view state and is not saved or undone.
   - **Undo/redo**: up to 100 steps. Each drag, resize, rotation, add, delete and layer change is one step. Typing into one field (text, number) and consecutive arrow-key nudges are merged into one step. Opening a design file starts a fresh history.
   - **New text**: 18 pt, centred, 80 % of the label width. **New images** are fitted into 80 % of the label, centred, keeping their aspect ratio. An image added twice is stored once.
@@ -84,10 +147,9 @@ These were decided without confirmed requirements and can be changed:
   - **Touch**: drag, resize and rotate with the finger. Handles are larger on touch screens. Touching an empty label area still scrolls and zooms the page.
   - **Layout**: one column below 900 px width (bottle preview at the end), canvas with a side panel from 900 px (preview at the top of the panel), canvas, preview and panel side by side from 1200 px.
   - Shapes from design files are shown, but there is no tool to add shapes yet.
-  - The main JavaScript bundle is about 735 kB (225 kB gzipped), mostly Konva. Vite warns about the size of this and the Three.js file; more code splitting can come later.
 - **Bottle preview** (`src/preview`):
   - **Loading** (decided by the project owner): shown next to the editor automatically. Three.js is in its own file (about 570 kB, 140 kB gzipped) that the browser downloads right after the editor appears, so it does not delay the first page load. Everything comes from the app's own origin.
-  - **Bottle**: a Bordeaux 750 ml bottle drawn from code (`LatheGeometry`), 300 mm high and 76 mm wide, with a capsule over the cork. No 3D model files or other assets, so nothing to license. The design's `bottleId` picks the shape; unknown ids show the default bottle.
+  - **Bottles** are drawn from code (`LatheGeometry`) from the bottle data in `src/templates` (see below), with a capsule over the cork. No 3D model files. The design's `bottleId` picks the shape; unknown ids show the default Bordeaux.
   - **Label on the glass**: the label is drawn without editor overlays (no handles, guides or bleed tint, trim area only) at 1024 px on its longer side, and wrapped as a cylinder segment 0.3 mm outside the glass. Its width becomes the arc length around the bottle, so the print is not stretched. It is centred on the front, and vertically in the straight part of the body (12–196 mm above the base). A label wider than the circumference (about 241 mm) or taller than that part shows its middle.
   - **Updates**: edits are collected for 30 ms and then drawn. The target is 300 ms from an edit to the drawn frame with the CPU slowed down 4× (like a mid-range phone). The test times each edit from a settled preview (the previous frame drawn); measured about 60 ms even with software rendering (no GPU, as in CI).
   - **Turning**: drag sideways to turn the bottle all the way around, up and down only a little (about 30° from above to 15° from below). No zoom or pan. On touch screens, vertical swipes keep scrolling the page. There are no turn buttons (decided by the project owner): the 3D view is a visual extra, and everything on the label can be edited with the keyboard in the editor.
@@ -98,7 +160,8 @@ These were decided without confirmed requirements and can be changed:
   - **Bottles** are shape parameters (`src/templates/data/bottles/*.json`): Bordeaux, Burgundy, Schlegel and Sparkling, all 750 ml (decided by the project owner). The outline is built from height, body and neck diameter, shoulder start and curve, neck start, label zone and capsule start; the lip and the rounded base are fixed. Bordeaux keeps its previous shape.
   - **Validation**: every file is checked with Zod when the app (or a test) loads; a broken file stops with its file name, and the file name must match the id. Unit tests check every template against the design schema, the bleed and safe margins, the fonts and the names in both languages.
   - **Applying a template** replaces the label (content and size) in one undo step and keeps the chosen bottle (decided by the project owner). Picking a bottle is also one undo step. The gallery marks the template a design is based on and its bottle.
-  - **Adding a template or bottle**: add the JSON file, its name in `src/templates/messages.ts` (German and English), and the file in `e2e/catalogData.ts`.
+  - **Thumbnails** in the gallery are pre-rendered PNGs (`src/templates/thumbnails/`, made by `npm run thumbnails`), so the first visit does not load every font (decided by the project owner). A test fails if a template changed but its thumbnail was not rendered again.
+  - **Adding a template or bottle**: add the JSON file, its name in `src/templates/messages.ts` (German and English), and the file in `e2e/catalogData.ts`; for a template, run `npm run thumbnails` (on macOS 13: `PW_CHANNEL=chrome npm run thumbnails`).
 - **PDF export** (`src/export`, all lengths in `src/print/geometry.ts`):
   - **True size**: everything is placed in millimetres converted to PDF points (1 pt = 1/72 inch); unit tests check page and element sizes within 0.01 mm.
   - **Layouts** (decided by the project owner, the user chooses before downloading): **For my printer** (default): the label centred on A4 portrait with crop marks; A4 landscape if the label only fits that way; a larger page if it fits neither (needs a print shop or larger paper). **For a print shop**: the page is exactly the label, plus bleed if turned on.
@@ -123,16 +186,29 @@ These were decided without confirmed requirements and can be changed:
   - Keyboard: everything is reachable with Tab, in the order of the page, with a 3 px focus ring (`e2e/keyboard.spec.ts`, 320 px phone, both languages). The label canvas has its own keyboard commands (see Editor). The 3D bottle is turned by dragging only; the label and the bottle choice are fully usable without it.
   - The full flow (template, text, bottle, photo, PDF, calibration page) is tested on a 320 × 568 phone in both languages without sideways scrolling (`e2e/flow.spec.ts`).
   - Not automated: screen reader testing by hand (for example VoiceOver, NVDA) and the content of the label canvas, which is a drawing (the layer list and the properties form describe and edit every element).
-- **Playwright runs Chromium only** for now. Firefox and WebKit can be added later.
+- **Size and first load** (`scripts/check-bundle-size.mjs`, `e2e/first-load.spec.ts`): the build fails if the first-load JavaScript is over 240 kB gzipped (now about 229 kB), the CSS over 10 kB, a lazily loaded file (3D preview, PDF export) over 200 kB gzipped, an image over 30 kB or a font over 1 MB, or if a font is part of the first load. On "slow 4G" (150 ms, 1.6 Mbit/s) with a 4× slower CPU, the editor must be usable within 5 s (measured 2.5 s) and the first load must stay under 500 kB (measured 395 kB). Vite's general warning about files over 500 kB (before compression) is expected for Konva and Three.js.
+- **Console errors**: every Playwright test fails if the page logs a console error or throws (`e2e/fixtures.ts`). A test may allow an error it causes on purpose, with the reason next to it.
+- **Playwright runs Chromium only.** Safari and Firefox are covered by the manual tests (MANUAL-TEST.md, Part C).
 - **The dependency audit fails on moderate or higher** findings, for both production and dev dependencies.
 - **License policy:** dependencies must use a permissive license (MIT, ISC, BSD, Apache-2.0, 0BSD, BlueOak, CC0, CC-BY-4.0, Unlicense, Zlib, Python-2.0). An unknown or missing license fails the scan, and so does any copyleft license (GPL, LGPL, AGPL, MPL, EPL and others). There are two reviewed exceptions, both MPL-2.0, used unmodified and never shipped in `dist/`: `lightningcss`, a required build-time dependency of Vite, and `axe-core` with `@axe-core/playwright`, the accessibility checks in the Playwright tests (approved by the project owner; `axe-core` is pinned to 4.14.0 through `overrides` in package.json). Exceptions are kept in `scripts/policy.mjs`.
 
-## Known limitation
+## Open issues
 
-Playwright 1.65 has no Chromium build for macOS 13. On such a Mac, run the end-to-end tests in an installed Google Chrome instead:
+Things that are known and not done yet, roughly by importance:
 
-```sh
-npm run test:e2e:chrome
-```
-
-This uses `playwright.chrome.config.ts`, which is the normal config with `channel: 'chrome'`. CI runs on Ubuntu with `npm run test:e2e` and is not affected.
+1. **Licence notices of shipped libraries.** The built JavaScript contains MIT/Zlib/0BSD-licensed libraries (React, Konva, Three.js, pdf-lib and others, see LICENSES.md). Their licences ask for the copyright and licence notices to ship with the app. The build does not include them yet. Before a public release, add a notices file (for example `dist/third-party-licenses.txt`, generated from the packages' licence files) and a link to it.
+2. **No licence for the app's own code.** The repository has no `LICENSE` file. The templates, bottle data and thumbnails are CC0; the code itself is not licensed for reuse until the project owner decides.
+3. **Manual tests not done yet.** MANUAL-TEST.md Parts A–D (3 printers, a real bottle, iOS Safari, Android Chrome, a desktop browser, a screen reader) need to be carried out and recorded. Results may lead to changes.
+4. **Offline after loading.** The 3D preview and the PDF export are loaded on demand (by design, for a fast first load; there is no service worker). If the connection drops before the PDF code was loaded, the export shows "The PDF could not be created" until the device is online again.
+5. **No autosave.** By design nothing is stored, so closing or reloading the tab loses unsaved work. There is no warning before leaving the page yet.
+6. **Text in the PDF is a 600 DPI picture** (decided by the project owner). It prints sharply but cannot be selected or searched, and print shops that check fonts may ask about it.
+7. **RGB only.** pdf-lib cannot write CMYK or PDF/X. Print shops that require them must convert the file.
+8. **pdf-lib is not maintained** (last release 2022). It works and is widely used; watch for security advisories (`npm run audit` in CI).
+9. **Browsers in automated tests.** Playwright runs Chromium only (on macOS 13 in installed Chrome, because Playwright 1.65 has no Chromium build for it: use `npm run test:e2e:chrome`). Safari and Firefox are checked by hand only.
+10. **Fonts are large TTF files** (0.3–0.9 MB each). WOFF2 or subsets would be smaller, but Playfair Display has a Reserved Font Name under the OFL, so changed versions must be renamed. Needs a decision before changing the files.
+11. **The 3D bottle turns by dragging only** (decided by the project owner), so keyboard and screen reader users cannot turn it. The label, the bottle choice and everything else work without it.
+12. **Language buttons and WCAG 2.5.3**: the buttons show "DE"/"EN" and are named "Deutsch (DE)"/"English (EN)" (decided by the project owner); axe's label-in-name rule is skipped for them.
+13. **No tool to add shapes.** Shapes come only from templates (and can then be moved, resized, deleted).
+14. **HEIC photos** (iPhone camera format) are not accepted as such; iOS usually converts them to JPEG when uploading. To be confirmed in MANUAL-TEST.md Part C step 8.
+15. **Very large labels on the bottle.** A label wider than the bottle's circumference or taller than its straight body shows only its middle in the preview.
+16. **Hosting and server logs** are outside the app (see PRIVACY-NOTES.md, "Hosting").
