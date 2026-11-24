@@ -1,4 +1,4 @@
-git # Wine Label Designer Test
+# Wine Label Designer
 
 A free, browser-based wine label designer (MVP) by DL-School, with a German and English UI.
 
@@ -52,7 +52,18 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on 
 These were decided without confirmed requirements and can be changed:
 
 - **Label geometry:** 90 × 120 mm, 300 DPI, 3 mm bleed, 3 mm safe margin.
+  The values live in one module, `src/print/geometry.ts`.
 - **Node.js 24** is the supported runtime.
+- **Image upload** (`src/upload`, limits in `src/upload/limits.ts`):
+  - Maximum file size: **10 MB**.
+  - Maximum image size: **8000 px per side and 40 megapixels**. Larger images are refused before decoding.
+  - **Low-resolution warning** below the full label with bleed at 300 DPI (currently 1134 × 1489 px). The image is still accepted.
+  - The file type is detected from the content (magic bytes). If the file extension or the browser-reported type contradicts the content (for example a JPEG named `.png`, or a file without an extension), the file is refused with `TYPE_MISMATCH`. An empty browser-reported type is accepted.
+  - The error code list from the requirements was extended by **`DIMENSIONS_TOO_LARGE`** for the maximum pixel size.
+  - EXIF, GPS and all other metadata are removed by decoding and re-encoding the image on a canvas. The EXIF orientation is applied first, so photos stay upright. **JPEG stays JPEG** (quality 0.95). **PNG and WebP become PNG**, because pdf-lib can only embed PNG and JPEG.
+  - Requires `OffscreenCanvas` and `createImageBitmap` (all current browsers; Safari 16.4 or later).
+- **UI language** follows the browser language: German for any `de` locale, otherwise English. There is no language switch yet.
+- **German texts use the formal "Sie".**
 - **Playwright runs Chromium only** for now. Firefox and WebKit can be added later.
 - **The dependency audit fails on moderate or higher** findings, for both production and dev dependencies.
 - **License policy:** dependencies must use a permissive license (MIT, ISC, BSD, Apache-2.0, 0BSD, BlueOak, CC0, CC-BY-4.0, Unlicense, Zlib, Python-2.0). An unknown or missing license fails the scan, and so does any copyleft license (GPL, LGPL, AGPL, MPL, EPL and others). There is one reviewed exception: `lightningcss` (MPL-2.0). It is a required build-time dependency of Vite, used unmodified and never shipped in `dist/`. Exceptions are kept in `scripts/policy.mjs`.

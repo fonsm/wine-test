@@ -21,6 +21,25 @@ export default defineConfig(
     files: ['src/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat['recommended-latest']],
     languageOptions: { globals: globals.browser },
+    rules: {
+      // Never insert user input (file names, text) as raw HTML.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']",
+          message: 'Raw HTML is not allowed. Render text as React children instead.',
+        },
+        {
+          selector:
+            'AssignmentExpression > MemberExpression.left[property.name=/^(innerHTML|outerHTML)$/]',
+          message: 'Raw HTML is not allowed. Use textContent or React instead.',
+        },
+        {
+          selector: "CallExpression[callee.property.name='insertAdjacentHTML']",
+          message: 'Raw HTML is not allowed.',
+        },
+      ],
+    },
   },
   {
     // Plain JS tooling (configs, scripts) runs in Node and is not type-checked.
