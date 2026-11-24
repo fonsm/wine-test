@@ -2,6 +2,7 @@ import i18next, { type i18n } from 'i18next';
 import { appMessages } from '../app/messages';
 import { editorMessages } from '../editor/messages';
 import { designMessages } from '../model/messages';
+import { previewMessages } from '../preview/messages';
 import { uploadMessages } from '../upload/messages';
 
 export const LANGUAGES = ['de', 'en'] as const;
@@ -25,19 +26,21 @@ export function createI18n(language: Language): i18n {
     lng: language,
     fallbackLng: DEFAULT_LANGUAGE,
     supportedLngs: LANGUAGES,
-    ns: ['app', 'upload', 'design', 'editor'],
+    ns: ['app', 'upload', 'design', 'editor', 'preview'],
     resources: {
       en: {
         app: appMessages.en,
         upload: uploadMessages.en,
         design: designMessages.en,
         editor: editorMessages.en,
+        preview: previewMessages.en,
       },
       de: {
         app: appMessages.de,
         upload: uploadMessages.de,
         design: designMessages.de,
         editor: editorMessages.de,
+        preview: previewMessages.de,
       },
     },
     initAsync: false,

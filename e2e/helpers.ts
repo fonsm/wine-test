@@ -1,5 +1,5 @@
 // Shared helpers for the Playwright tests.
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 export const IMAGE_INPUT = 'input[type="file"][accept^="image/"]';
 export const DESIGN_INPUT = 'input[type="file"][accept=".json,application/json"]';
@@ -85,4 +85,18 @@ export function recordNetworkRequests(page: Page): string[] {
     if (protocol !== 'blob:' && protocol !== 'data:') requests.push(request.url());
   });
   return requests;
+}
+
+/** Takes a screenshot of the element and returns its PNG bytes (saved to path if given). */
+export async function screenshotBytes(target: Locator, path?: string): Promise<Uint8Array> {
+  // Playwright declares the result as Node's Buffer (a Uint8Array). Without Node types in this
+  // project that type is unresolved, so it is narrowed to Uint8Array here, in one place.
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const image: Uint8Array = await target.screenshot({ path });
+  return image;
+}
+
+/** Whether two screenshots are byte-for-byte the same. */
+export function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
 }

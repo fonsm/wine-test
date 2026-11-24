@@ -12,12 +12,14 @@ import {
   Text,
   Transformer,
 } from 'react-konva';
-import { cssFontFamily } from '../fonts/fonts';
 import type { Design, DesignElement } from '../model/schema';
 import { BLEED_MM, SAFE_MARGIN_MM } from '../print/geometry';
+import { PAPER_COLOR, elementNode } from '../render/elementNodes';
+import { designFontSpecs, loadFonts } from '../render/fonts';
+import { cachedImage, loadImage } from '../render/images';
 import { MIN_ELEMENT_SIZE_MM, type ElementPatch } from './operations';
 import { SNAP_THRESHOLD_PX, snapBox, snapGuides, type Guides } from './snap';
-import { fromNodePosition, pointsToMm, toNodePosition } from './units';
+import { fromNodePosition, toNodePosition } from './units';
 
 interface LabelCanvasProps {
   design: Design;
@@ -35,7 +37,6 @@ interface ActiveGuides {
 }
 
 const COLORS = {
-  paper: '#ffffff',
   bleed: 'rgba(0, 0, 0, 0.07)',
   trim: '#8a8a8a',
   safe: '#b8b8b8',
@@ -155,7 +156,7 @@ export function LabelCanvas({
               name="background"
               width={totalWidthMm * pxPerMm}
               height={totalHeightMm * pxPerMm}
-              fill={COLORS.paper}
+              fill={PAPER_COLOR}
             />
           </Layer>
           <Layer>
@@ -301,178 +302,49 @@ function ElementContent({
   pxPerMm: number;
   fontsVersion: number;
 }) {
-  const width = element.width * pxPerMm;
-  const height = element.height * pxPerMm;
-  switch (element.type) {
-    case 'text': {
-      const { style } = element;
-      return (
-        <Text
-          // Re-create the node when fonts finish loading, so Konva measures with the real font.
-          key={fontsVersion}
-          width={width}
-          height={height}
-          text={element.text}
-          fontFamily={cssFontFamily(style.fontFamily)}
-          fontSize={pointsToMm(style.fontSizePt) * pxPerMm}
-          fontStyle={fontStyle(style.fontStyle, style.fontWeight)}
-          lineHeight={style.lineHeight}
-          align={style.align}
-          fill={style.color}
-          wrap="word"
-          listening={false}
-        />
-      );
-    }
+  useLoadedImage(element.type === 'image' ? design.assets[element.assetId]?.dataUrl : undefined);
+  const node = elementNode(element, design, pxPerMm, cachedImage);
+  switch (node?.kind) {
+    case undefined:
+      return null;
+    case 'text':
+      // Re-create the node when fonts finish loading, so Konva measures with the real font.
+      return <Text key={fontsVersion} {...node.config} />;
     case 'image':
-      return (
-        <ImageContent
-          dataUrl={design.assets[element.assetId]?.dataUrl}
-          fit={element.style.fit}
-          width={width}
-          height={height}
-        />
-      );
-    case 'shape': {
-      const { style } = element;
-      const stroke = style.stroke ?? undefined;
-      const fill = style.fill ?? undefined;
-      const strokeWidth = style.strokeWidthMm * pxPerMm;
-      if (element.shape === 'ellipse') {
-        return (
-          <Ellipse
-            x={width / 2}
-            y={height / 2}
-            radiusX={width / 2}
-            radiusY={height / 2}
-            fill={fill}
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-            listening={false}
-          />
-        );
-      }
-      if (element.shape === 'line') {
-        return (
-          <Line
-            points={[0, height / 2, width, height / 2]}
-            stroke={stroke ?? fill}
-            strokeWidth={Math.max(strokeWidth, 1)}
-            listening={false}
-          />
-        );
-      }
-      return (
-        <Rect
-          width={width}
-          height={height}
-          fill={fill}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          cornerRadius={style.cornerRadiusMm * pxPerMm}
-          listening={false}
-        />
-      );
-    }
+      return <KonvaImage {...node.config} />;
+    case 'ellipse':
+      return <Ellipse {...node.config} />;
+    case 'line':
+      return <Line {...node.config} />;
+    case 'rect':
+      return <Rect {...node.config} />;
   }
 }
 
-function fontStyle(style: 'normal' | 'italic', weight: 'normal' | 'bold'): string {
-  if (style === 'italic') return weight === 'bold' ? 'italic bold' : 'italic';
-  return weight;
-}
-
-function ImageContent({
-  dataUrl,
-  fit,
-  width,
-  height,
-}: {
-  dataUrl: string | undefined;
-  fit: 'cover' | 'contain' | 'stretch';
-  width: number;
-  height: number;
-}) {
-  const image = useLoadedImage(dataUrl);
-  if (!image) return null;
-  const iw = image.naturalWidth;
-  const ih = image.naturalHeight;
-  if (fit === 'stretch' || iw === 0 || ih === 0) {
-    return <KonvaImage image={image} width={width} height={height} listening={false} />;
-  }
-  if (fit === 'cover') {
-    const scale = Math.max(width / iw, height / ih);
-    const cropWidth = width / scale;
-    const cropHeight = height / scale;
-    return (
-      <KonvaImage
-        image={image}
-        width={width}
-        height={height}
-        crop={{
-          x: (iw - cropWidth) / 2,
-          y: (ih - cropHeight) / 2,
-          width: cropWidth,
-          height: cropHeight,
-        }}
-        listening={false}
-      />
-    );
-  }
-  const scale = Math.min(width / iw, height / ih);
-  return (
-    <KonvaImage
-      image={image}
-      x={(width - iw * scale) / 2}
-      y={(height - ih * scale) / 2}
-      width={iw * scale}
-      height={ih * scale}
-      listening={false}
-    />
-  );
-}
-
-/** Decoded images by data URL, so undo/redo and re-renders do not decode again. */
-const imageCache = new Map<string, HTMLImageElement>();
-
-function useLoadedImage(dataUrl: string | undefined): HTMLImageElement | null {
+/** Starts decoding an image and re-renders once it is ready. */
+function useLoadedImage(dataUrl: string | undefined): void {
   const [, setLoaded] = useState(0);
-  const cached = dataUrl ? imageCache.get(dataUrl) : undefined;
   useEffect(() => {
-    if (!dataUrl || imageCache.has(dataUrl)) return;
+    if (!dataUrl || cachedImage(dataUrl)) return;
     let active = true;
-    const image = new window.Image();
-    image.onload = () => {
-      imageCache.set(dataUrl, image);
+    void loadImage(dataUrl).then(() => {
       if (active) setLoaded((count) => count + 1);
-    };
-    // A data: URL is decoded locally; nothing is requested from a server.
-    image.src = dataUrl;
+    });
     return () => {
       active = false;
     };
   }, [dataUrl]);
-  return cached ?? null;
 }
 
 /** Loads the fonts used by text elements and returns a counter that changes when fonts finish loading. */
 function useFontsVersion(design: Design): number {
   const [version, setVersion] = useState(0);
-  const fontSpecs = useMemo(() => {
-    const specs = new Set<string>();
-    for (const element of design.elements) {
-      if (element.type !== 'text') continue;
-      const { fontStyle: style, fontWeight, fontFamily } = element.style;
-      specs.add(`${style} ${fontWeight} 16px ${cssFontFamily(fontFamily)}`);
-    }
-    return [...specs].sort().join('|');
-  }, [design.elements]);
+  const fontSpecs = useMemo(() => designFontSpecs(design).join('|'), [design]);
 
   useEffect(() => {
     if (!fontSpecs) return;
     let active = true;
-    // Loads the self-hosted font files (same origin) that are not loaded yet.
-    void Promise.all(fontSpecs.split('|').map((spec) => document.fonts.load(spec))).then(() => {
+    void loadFonts(fontSpecs.split('|')).then(() => {
       if (active) setVersion((count) => count + 1);
     });
     return () => {
