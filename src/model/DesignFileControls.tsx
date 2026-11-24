@@ -3,7 +3,7 @@ import { useId, useRef, useState, type ChangeEvent } from 'react';
 import { downloadDesign } from './download';
 import { formatDesignFileError } from './format';
 import type { Design } from './schema';
-import { readDesignFile } from './serialize';
+import { readDesignFile, type DesignFileError } from './serialize';
 
 interface DesignFileControlsProps {
   t: TFunction;
@@ -12,8 +12,11 @@ interface DesignFileControlsProps {
   onLoad: (design: Design) => void;
 }
 
+// Messages are formatted when rendering, so they follow a language switch.
 type Status =
-  { kind: 'idle' } | { kind: 'loaded'; message: string } | { kind: 'error'; message: string };
+  | { kind: 'idle' }
+  | { kind: 'loaded'; fileName: string; count: number }
+  | { kind: 'error'; fileName: string; error: DesignFileError };
 
 export function DesignFileControls({ t, design, onLoad }: DesignFileControlsProps) {
   const inputId = useId();
@@ -25,14 +28,11 @@ export function DesignFileControls({ t, design, onLoad }: DesignFileControlsProp
     const result = await readDesignFile(file);
     if (request !== latestRequest.current) return;
     if (!result.ok) {
-      setStatus({ kind: 'error', message: formatDesignFileError(t, result.error, file.name) });
+      setStatus({ kind: 'error', fileName: file.name, error: result.error });
       return;
     }
     onLoad(result.design);
-    setStatus({
-      kind: 'loaded',
-      message: t('design:loaded', { fileName: file.name, count: result.design.elements.length }),
-    });
+    setStatus({ kind: 'loaded', fileName: file.name, count: result.design.elements.length });
   }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
@@ -57,7 +57,9 @@ export function DesignFileControls({ t, design, onLoad }: DesignFileControlsProp
       {/* Messages contain the user's file name: rendered as text only, never as HTML. */}
       {status.kind !== 'idle' && (
         <p data-testid="design-file-status" role={status.kind === 'error' ? 'alert' : 'status'}>
-          {status.message}
+          {status.kind === 'error'
+            ? formatDesignFileError(t, status.error, status.fileName)
+            : t('design:loaded', { fileName: status.fileName, count: status.count })}
         </p>
       )}
     </section>

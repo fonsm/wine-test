@@ -1,4 +1,6 @@
 import i18next, { type i18n } from 'i18next';
+import { appMessages } from '../app/messages';
+import { editorMessages } from '../editor/messages';
 import { designMessages } from '../model/messages';
 import { uploadMessages } from '../upload/messages';
 
@@ -23,10 +25,20 @@ export function createI18n(language: Language): i18n {
     lng: language,
     fallbackLng: DEFAULT_LANGUAGE,
     supportedLngs: LANGUAGES,
-    ns: ['upload', 'design'],
+    ns: ['app', 'upload', 'design', 'editor'],
     resources: {
-      en: { upload: uploadMessages.en, design: designMessages.en },
-      de: { upload: uploadMessages.de, design: designMessages.de },
+      en: {
+        app: appMessages.en,
+        upload: uploadMessages.en,
+        design: designMessages.en,
+        editor: editorMessages.en,
+      },
+      de: {
+        app: appMessages.de,
+        upload: uploadMessages.de,
+        design: designMessages.de,
+        editor: editorMessages.de,
+      },
     },
     initAsync: false,
     // React escapes all text it renders, so escaping here would show "&lt;" to the user.

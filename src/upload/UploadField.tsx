@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
+import type { LabelSize } from '../print/geometry';
 import { formatIssue } from './format';
 import { MAX_FILE_SIZE_MB } from './limits';
 import { processUpload } from './process';
@@ -26,9 +27,11 @@ interface UploadFieldProps {
   t: TFunction;
   /** Called with the cleaned, metadata-free image. */
   onImage?: (image: CleanImage) => void;
+  /** The design's label size, for the low-resolution warning. */
+  labelSize?: LabelSize;
 }
 
-export function UploadField({ t, onImage }: UploadFieldProps) {
+export function UploadField({ t, onImage, labelSize }: UploadFieldProps) {
   const inputId = useId();
   const hintId = useId();
   const [state, setState] = useState<State>({ kind: 'idle' });
@@ -45,7 +48,7 @@ export function UploadField({ t, onImage }: UploadFieldProps) {
   async function handleFile(file: File) {
     const request = ++latestRequest.current;
     setState({ kind: 'busy', fileName: file.name });
-    const result = await processUpload(file);
+    const result = await processUpload(file, undefined, labelSize);
     if (request !== latestRequest.current) return; // a newer file was chosen meanwhile
 
     if (!result.ok) {
@@ -100,7 +103,7 @@ export function UploadField({ t, onImage }: UploadFieldProps) {
             data-testid="upload-preview"
             src={state.previewUrl}
             alt={t('upload:previewAlt')}
-            style={{ maxWidth: '100%', maxHeight: '20rem' }}
+            className="upload-preview"
           />
         </>
       )}

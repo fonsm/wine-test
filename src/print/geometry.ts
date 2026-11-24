@@ -9,6 +9,26 @@ export const SAFE_MARGIN_MM = 3;
 
 const MM_PER_INCH = 25.4;
 
+export interface LabelSize {
+  widthMm: number;
+  heightMm: number;
+}
+
+/** Sizes offered in the editor. The first one is the default for new designs. Add more here. */
+export const LABEL_SIZE_PRESETS: readonly LabelSize[] = [
+  { widthMm: LABEL_WIDTH_MM, heightMm: LABEL_HEIGHT_MM },
+];
+
+/** Range for custom label sizes (each side). Assumption. */
+export const MIN_LABEL_SIZE_MM = 30;
+export const MAX_LABEL_SIZE_MM = 300;
+
+export function isValidLabelSize({ widthMm, heightMm }: LabelSize): boolean {
+  return [widthMm, heightMm].every(
+    (side) => Number.isFinite(side) && side >= MIN_LABEL_SIZE_MM && side <= MAX_LABEL_SIZE_MM,
+  );
+}
+
 export interface PixelSize {
   width: number;
   height: number;
@@ -21,9 +41,12 @@ export function mmToPx(mm: number, dpi: number): number {
 }
 
 /** Pixel size of the whole label including bleed on every side. */
-export function labelSizeWithBleedPx(dpi: number): PixelSize {
+export function labelSizeWithBleedPx(
+  dpi: number,
+  size: LabelSize = { widthMm: LABEL_WIDTH_MM, heightMm: LABEL_HEIGHT_MM },
+): PixelSize {
   return {
-    width: mmToPx(LABEL_WIDTH_MM + 2 * BLEED_MM, dpi),
-    height: mmToPx(LABEL_HEIGHT_MM + 2 * BLEED_MM, dpi),
+    width: mmToPx(size.widthMm + 2 * BLEED_MM, dpi),
+    height: mmToPx(size.heightMm + 2 * BLEED_MM, dpi),
   };
 }

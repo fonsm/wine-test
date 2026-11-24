@@ -5,6 +5,10 @@ import {
   LABEL_HEIGHT_MM,
   LABEL_WIDTH_MM,
   SAFE_MARGIN_MM,
+  LABEL_SIZE_PRESETS,
+  MAX_LABEL_SIZE_MM,
+  MIN_LABEL_SIZE_MM,
+  isValidLabelSize,
   labelSizeWithBleedPx,
   mmToPx,
 } from './geometry';
@@ -33,5 +37,28 @@ describe('print geometry', () => {
       width: mmToPx(LABEL_WIDTH_MM + 2 * BLEED_MM, EXPORT_DPI),
       height: mmToPx(LABEL_HEIGHT_MM + 2 * BLEED_MM, EXPORT_DPI),
     });
+  });
+
+  it('calculates the size with bleed for any label size', () => {
+    expect(labelSizeWithBleedPx(EXPORT_DPI, { widthMm: 100, heightMm: 140 })).toEqual({
+      width: mmToPx(100 + 2 * BLEED_MM, EXPORT_DPI),
+      height: mmToPx(140 + 2 * BLEED_MM, EXPORT_DPI),
+    });
+  });
+});
+
+describe('label sizes', () => {
+  it('offers the default size as the first preset', () => {
+    expect(LABEL_SIZE_PRESETS[0]).toEqual({ widthMm: LABEL_WIDTH_MM, heightMm: LABEL_HEIGHT_MM });
+  });
+
+  it('allows custom sizes from 30 to 300 mm', () => {
+    expect(MIN_LABEL_SIZE_MM).toBe(30);
+    expect(MAX_LABEL_SIZE_MM).toBe(300);
+    expect(isValidLabelSize({ widthMm: 30, heightMm: 300 })).toBe(true);
+    expect(isValidLabelSize({ widthMm: 100.5, heightMm: 140 })).toBe(true);
+    expect(isValidLabelSize({ widthMm: 29.9, heightMm: 100 })).toBe(false);
+    expect(isValidLabelSize({ widthMm: 100, heightMm: 301 })).toBe(false);
+    expect(isValidLabelSize({ widthMm: Number.NaN, heightMm: 100 })).toBe(false);
   });
 });

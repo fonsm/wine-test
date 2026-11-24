@@ -51,8 +51,9 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on 
 
 These were decided without confirmed requirements and can be changed:
 
-- **Label geometry:** 90 × 120 mm, 300 DPI, 3 mm bleed, 3 mm safe margin.
+- **Label geometry:** 90 × 120 mm (default size), 300 DPI, 3 mm bleed, 3 mm safe margin.
   The values live in one module, `src/print/geometry.ts`.
+- **Label size setting** (decided by the project owner): the editor offers the presets from `LABEL_SIZE_PRESETS` (for now only 90 × 120 mm) and a custom size. Custom sizes are limited to **30–300 mm** per side; design files with a size outside this range are refused. When the size changes, elements keep their size and their position relative to the label centre, and may stick out of a smaller label. Typing a size is one undo step. The low-resolution warning for uploads uses the current label size.
 - **Node.js 24** is the supported runtime.
 - **Image upload** (`src/upload`, limits in `src/upload/limits.ts`):
   - Maximum file size: **10 MB**.
@@ -72,7 +73,18 @@ These were decided without confirmed requirements and can be changed:
   - Maximum design file size: **50 MB**. Further limits: 500 elements, 100 images, 5000 characters per text, coordinates within ±1000 mm.
   - Default template id `blank` and bottle id `bordeaux-750`. They are placeholders until templates and bottles exist.
   - The saved file is called `wine-label-design.json`.
-- **UI language** follows the browser language: German for any `de` locale, otherwise English. There is no language switch yet.
+- **Editor** (`src/editor`):
+  - **Fonts** (decided by the project owner): four bundled OFL fonts, Playfair Display (default), EB Garamond, Inter and Great Vibes. They are TTF files from the Google Fonts repository (upstream publishes no WOFF2; TTF can also be embedded in the PDF export later). They add about 4.4 MB to the build, but the browser only downloads a font when a text uses it. Designs that name another font (for example `serif`) still open and use a generic fallback.
+  - The design is the editor's only document state. Selection is view state and is not saved or undone.
+  - **Undo/redo**: up to 100 steps. Each drag, resize, rotation, add, delete and layer change is one step. Typing into one field (text, number) and consecutive arrow-key nudges are merged into one step. Opening a design file starts a fresh history.
+  - **New text**: 18 pt, centred, 80 % of the label width. **New images** are fitted into 80 % of the label, centred, keeping their aspect ratio. An image added twice is stored once.
+  - **Snapping**: to bleed, trim edges, safe margin, label centre and to edges and centres of other unrotated elements, within 6 screen pixels. Rotated elements snap only their centre. Rotation snaps to 0°, 90°, 180° and 270°.
+  - **Keyboard**: arrow keys move the selected element by 1 mm (Shift: 10 mm), Delete/Backspace removes it, Escape deselects, Ctrl/Cmd+Z undoes, Ctrl/Cmd+Shift+Z or Ctrl+Y redoes. Every property can also be edited with form fields, and elements are selected through the layer list.
+  - **Touch**: drag, resize and rotate with the finger. Handles are larger on touch screens. Touching an empty label area still scrolls and zooms the page.
+  - **Layout**: one column below 900 px width, canvas with a side panel above.
+  - Shapes from design files are shown, but there is no tool to add shapes yet.
+  - The JavaScript bundle is about 730 kB (225 kB gzipped), mostly Konva. Vite warns about the size; code splitting can come later.
+- **UI language**: a **DE | EN** switch in the header. The first visit follows the browser language (German for any `de` locale, otherwise English). The choice is remembered in this browser's `localStorage` under `wine-label.language` (value `de` or `en`, nothing else; decided by the project owner). No cookie is set and nothing is sent anywhere. If storage is blocked, the switch still works until the page is reloaded. Switching keeps the design and its undo history.
 - **German texts use the formal "Sie".**
 - **Playwright runs Chromium only** for now. Firefox and WebKit can be added later.
 - **The dependency audit fails on moderate or higher** findings, for both production and dev dependencies.
