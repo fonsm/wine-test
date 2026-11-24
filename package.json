@@ -18,7 +18,8 @@
     "test:e2e": "playwright test",
     "test:e2e:chrome": "playwright test --config playwright.chrome.config.ts",
     "audit": "npm audit --audit-level=moderate",
-    "licenses": "node scripts/check-licenses.mjs"
+    "licenses": "node scripts/check-licenses.mjs",
+    "thumbnails": "node scripts/render-thumbnails.mjs"
   },
   "dependencies": {
     "i18next": "26.7.2",

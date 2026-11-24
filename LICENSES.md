@@ -19,9 +19,10 @@ License texts: `src/assets/fonts/OFL-PlayfairDisplay.txt`, `OFL-EBGaramond.txt`,
 
 ## Templates and bottle shapes
 
-| Asset           | Files                                                                         | Source                                                         | License                                                                                      | Attribution  |
-| --------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------ |
-| Label templates | `src/templates/data/templates/*.json` (blank, classic, elegant, modern)       | Created for this project by DL-School (no third-party content) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (decided by the project owner) | Not required |
-| Bottle shapes   | `src/templates/data/bottles/*.json` (bordeaux, burgundy, schlegel, sparkling) | Created for this project by DL-School (no third-party content) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (decided by the project owner) | Not required |
+| Asset               | Files                                                                         | Source                                                            | License                                                                                      | Attribution  |
+| ------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------ |
+| Label templates     | `src/templates/data/templates/*.json` (blank, classic, elegant, modern)       | Created for this project by DL-School (no third-party content)    | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (decided by the project owner) | Not required |
+| Bottle shapes       | `src/templates/data/bottles/*.json` (bordeaux, burgundy, schlegel, sparkling) | Created for this project by DL-School (no third-party content)    | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (decided by the project owner) | Not required |
+| Template thumbnails | `src/templates/thumbnails/*.png`                                              | Rendered from the label templates above with `npm run thumbnails` | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)                                | Not required |
 
 The templates contain only text and shapes, no images (decided by the project owner). They use only the fonts listed above. The winery name "Weingut Sonnenhang" and all other sample texts are made up. The bottle shapes are drawn from typical outer dimensions of standard 750 ml bottles, not copied from any manufacturer's drawing.

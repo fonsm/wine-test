@@ -1,14 +1,11 @@
-import { useEffect, useId, useState } from 'react';
+import { useId } from 'react';
 import { useT } from '../i18n/I18nContext';
 import type { Design } from '../model/schema';
-import { LabelRenderer, prepareDesign } from '../render/renderLabel';
 import type { BottleShape } from './bottles';
 import { BOTTLES, TEMPLATES } from './catalog';
 import './gallery.css';
 import { silhouette } from './silhouette';
-
-/** Longer side of a template thumbnail in pixels (sharp on 2× screens at about 70 px). */
-const THUMBNAIL_PX = 160;
+import { thumbnailUrl } from './thumbnails';
 
 interface GalleryPanelProps {
   design: Design;
@@ -35,7 +32,7 @@ export function GalleryPanel({ design, onApplyTemplate, onPickBottle }: GalleryP
               onApplyTemplate(template.id);
             }}
           >
-            <TemplateThumbnail design={template.design} />
+            <TemplateThumbnail id={template.id} design={template.design} />
             <span>{t(`templates:templateNames.${template.id}`)}</span>
           </button>
         ))}
@@ -63,25 +60,9 @@ export function GalleryPanel({ design, onApplyTemplate, onPickBottle }: GalleryP
   );
 }
 
-/** The template drawn small, once its fonts are loaded. Decorative: the button has the name. */
-function TemplateThumbnail({ design }: { design: Design }) {
-  const [src, setSrc] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    void prepareDesign(design).then(() => {
-      if (!active) return;
-      const renderer = new LabelRenderer();
-      try {
-        // A data: URL of the local drawing; nothing is loaded from anywhere.
-        setSrc(renderer.draw(design, THUMBNAIL_PX).toDataURL('image/png'));
-      } finally {
-        renderer.dispose();
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [design]);
+/** The template's pre-rendered picture. Decorative: the button has the name. */
+function TemplateThumbnail({ id, design }: { id: string; design: Design }) {
+  const src = thumbnailUrl(id);
   const { widthMm, heightMm } = design.labelSize;
   return (
     <span
