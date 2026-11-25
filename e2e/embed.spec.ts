@@ -230,6 +230,24 @@ test("full flow: only the shop page and the app's files on the CDN, nothing abou
   expect(new TextDecoder('latin1').decode(bytes.slice(0, 5))).toBe('%PDF-');
   await expect(page.getByTestId('export-status')).toHaveText(de('export:done'));
 
+  // Every element of the app (the root and all inside it; the <link> next to it shows no
+  // text) names only generic fonts or the app's own label fonts (WLD …),
+  // never a name the theme could define and load from elsewhere.
+  const named = await page.locator('#wine-label-designer').evaluate((host) => {
+    const families = new Set<string>();
+    for (const element of host.shadowRoot?.querySelectorAll('.wld-root, .wld-root *') ?? []) {
+      for (const family of getComputedStyle(element).fontFamily.split(',')) {
+        families.add(family.trim().replace(/^"|"$/g, ''));
+      }
+    }
+    return [...families];
+  });
+  expect(
+    named.filter(
+      (family) => !/^(system-ui|sans-serif|serif|cursive|monospace|WLD .+)$/.test(family),
+    ),
+  ).toEqual([]);
+
   // The label fonts came from the CDN and are in use, under the app's own names; the theme's
   // font with the same name (product.html) was never loaded.
   expect(requests.some(({ url }) => url.startsWith(CDN) && url.endsWith('.ttf'))).toBe(true);

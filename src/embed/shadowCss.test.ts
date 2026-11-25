@@ -4,6 +4,24 @@ import { CONTAINER_NAME, ROOT_CLASS, toShadowCss } from './shadowCss';
 
 const root = `.${ROOT_CLASS}`;
 
+/** CSS generic font families: keywords, never the name of a downloaded font. */
+const GENERIC_FAMILIES = new Set([
+  'serif',
+  'sans-serif',
+  'monospace',
+  'cursive',
+  'fantasy',
+  'system-ui',
+  'ui-serif',
+  'ui-sans-serif',
+  'ui-monospace',
+  'ui-rounded',
+  'math',
+  'emoji',
+  'fangsong',
+  'inherit',
+]);
+
 describe('toShadowCss', () => {
   it('starts with a reset, so nothing the shop theme sets is inherited', () => {
     expect(toShadowCss('')).toMatch(new RegExp(`^\\${root}\\s*\\{[^}]*all:\\s*initial`));
@@ -54,6 +72,24 @@ describe('toShadowCss', () => {
     expect(css).toContain('margin:-8px');
     expect(css).toContain('calc(16px + 2px)');
     expect(toShadowCss('.gap-2rem{a:b}')).toContain('.gap-2rem{a:b}');
+  });
+
+  it("names only generic fonts in the app's CSS: a theme may define any other name, elsewhere", () => {
+    const sheets = import.meta.glob<string>(['../**/*.css', '!../fonts/fonts.css'], {
+      eager: true,
+      query: '?raw',
+      import: 'default',
+    });
+    expect(Object.keys(sheets).length).toBeGreaterThan(3);
+    for (const [file, css] of Object.entries(sheets)) {
+      for (const [, value = ''] of css.matchAll(/font-family\s*:\s*([^;}]+)/g)) {
+        const families = value.split(',').map((family) => family.trim());
+        expect(
+          families.filter((family) => !GENERIC_FAMILIES.has(family)),
+          file,
+        ).toEqual([]);
+      }
+    }
   });
 
   it("converts the app's real stylesheet completely", () => {
