@@ -58,6 +58,51 @@ npm run preview   # serve dist/ locally at http://localhost:4173
 
 `dist/` can be hosted on any static web server. No server-side code is needed.
 
+`npm run build` also builds the **embedded version** into `dist-embed/` (see the next section). `npm run build:embed` builds only that.
+
+## Embedding in a shop page (Shopify test)
+
+For the Shopify test (a theme app extension on a product page), the app can run inside another page. `dist-embed/` is one flat folder, as a theme extension's `assets/` folder needs: `wine-label-designer.js`, `wine-label-designer.css`, and the chunks, fonts and thumbnails (`wld-*`). The script finds all other files next to itself, so they can be served from Shopify's CDN.
+
+The shop page needs one element and the script:
+
+```html
+<div data-wine-label-designer data-language="de" data-bottle="riesling">
+  <script type="application/json">
+    [{ "id": "riesling", "name": "Riesling-Flasche", "heightMm": 350, "bodyDiameterMm": 74, … }]
+  </script>
+</div>
+<script type="module" src="…/wine-label-designer.js"></script>
+```
+
+- `data-language`: the shop's language (`de`, `de-DE`, `en`, …). Other languages fall back to the browser language, then English.
+- `data-bottle`: the id of the product's bottle, which the app starts with. Optional.
+- The JSON script: the shop's bottles, for example from a `bottle` metaobject. Each bottle has the fields of a file in `src/templates/data/bottles/` plus a `name` in the shop's language. Each bottle is checked like a built-in one; bad bottles are skipped with a console warning, and without any valid bottle the built-in ones are used. At most 50. Optional.
+
+In a theme app extension, the block's Liquid can write this from the metaobjects. A sketch, to be checked against Shopify's current Liquid reference in step 5 of the test plan:
+
+```liquid
+<div data-wine-label-designer
+     data-language="{{ request.locale.iso_code }}"
+     data-bottle="{{ product.metafields.custom.bottle.value.system.handle }}">
+  <script type="application/json">
+    [{%- for b in shop.metaobjects.bottle.values -%}
+      {"id": {{ b.system.handle | json }}, "name": {{ b.name.value | json }},
+       "heightMm": {{ b.height_mm.value | json }}, …}{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}]
+  </script>
+</div>
+<script type="module" src="{{ 'wine-label-designer.js' | asset_url }}"></script>
+```
+
+How the embedded app behaves:
+
+- It lives in a **shadow root** on that element, so the theme's CSS does not reach it and its CSS does not reach the theme. Inherited styles are reset, and `rem` sizes are turned into `px`, because themes change the page's root font size (`src/embed/shadowCss.ts`).
+- It has **no page title, no `<main>` and no language switch**, follows the shop's language, and never changes the shop's document (title, `lang`) or stores anything, not even the language.
+- The label fonts are added to the page with the FontFace API (font rules inside a shadow root are ignored), from the same rules as `src/fonts/fonts.css`. Like before, a font file loads only when a label uses it.
+- **Network rule** (decided by the project owner, see AGENTS.md): embedded, the app's files may come from the shop's domain and Shopify's CDN, still only `GET` and never with user data.
+- `e2e/embed.spec.ts` checks all this in a fake shop page (`e2e/shop/product.html`) with deliberately hostile theme CSS, with the page and the app's files on two different origins, like a shop and its CDN.
+
 ## CI
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on every pull request. It runs lint, the type check, unit tests, the dependency audit, the license scan, the build with the static-output check, and the Playwright tests.
@@ -68,6 +113,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main` and on 
 src/
   app/        header and language switch
   editor/     label editor: canvas (Konva), panels, state with undo/redo
+  embed/      the embedded version for a shop page: settings from the page, shadow root, fonts
   export/     PDF export (pdf-lib): layout plan, writer, calibration page
   fonts/      bundled fonts (files in src/assets/fonts/)
   i18n/       i18next setup, language detection and storage, translation checks
@@ -77,7 +123,7 @@ src/
   render/     drawing a label without editor overlays (shared by preview, export, thumbnails)
   templates/  template and bottle data files, loader, gallery, thumbnails
   upload/     image upload: type check by content, limits, metadata removal
-e2e/          Playwright tests
+e2e/          Playwright tests (e2e/shop/: a fake shop page for the embedded version)
 scripts/      licence, static-output and bundle-size checks; thumbnail rendering
 ```
 
@@ -212,3 +258,7 @@ Things that are known and not done yet, roughly by importance:
 14. **HEIC photos** (iPhone camera format) are not accepted as such; iOS usually converts them to JPEG when uploading. To be confirmed in MANUAL-TEST.md Part C step 8.
 15. **Very large labels on the bottle.** A label wider than the bottle's circumference or taller than its straight body shows only its middle in the preview.
 16. **Hosting and server logs** are outside the app (see PRIVACY-NOTES.md, "Hosting").
+17. **Shopify test, not verified in a real shop yet.** The embedded version is tested in a fake shop page only. Things to check in the development store: the real CDN URLs (if Shopify adds a query string such as `?v=…` to asset URLs, the privacy check, which rejects query strings, needs a reviewed rule for that), Shopify's size and file-count limits for extension files (the fonts are 0.3–0.9 MB each), and the Liquid for the metaobjects (the sketch above).
+18. **Font names can clash with the shop theme.** The label fonts are registered on the shop page under their own names (for example "Inter"). If a theme loads a different file under the same name, the label could use the theme's file. Not seen yet; registering them under app-specific names would avoid it.
+19. **One designer per page.** The embedded version starts only on the first `data-wine-label-designer` element.
+20. **No size check for `dist-embed/`.** The bundle-size check covers the standalone build. The embedded main file is about the same size (about 233 kB gzipped).
