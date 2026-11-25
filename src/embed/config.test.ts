@@ -62,6 +62,22 @@ describe('parseEmbedConfig: bottles from the shop', () => {
     expect(config.warnings.join('\n')).toContain('"good" appears twice');
   });
 
+  it('never fails on odd ids, and only quotes ids that are text', () => {
+    const odd = [null, 7, { nested: true }, ['a'], 'x'.repeat(500)].map((id) => ({
+      ...shopBottle('ok'),
+      id,
+    }));
+    let config: ReturnType<typeof parse> | undefined;
+    expect(() => {
+      config = parse({ bottlesJson: JSON.stringify([shopBottle('good'), ...odd]) });
+    }).not.toThrow();
+    expect(config?.bottles?.map((bottle) => bottle.id)).toEqual(['good']);
+    expect(config?.warnings).toHaveLength(odd.length);
+    const text = config?.warnings.join('\n') ?? '';
+    expect(text).not.toContain('[object Object]');
+    expect(text).not.toContain('x'.repeat(100));
+  });
+
   it('keeps the built-in bottles when the data is broken or has no valid bottle', () => {
     for (const bottlesJson of ['[{', '{"id":"x"}', '[]', JSON.stringify([{ id: 'x' }])]) {
       const config = parse({ bottlesJson });

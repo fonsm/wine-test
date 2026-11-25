@@ -40,6 +40,12 @@ function describe(issues: readonly { path: PropertyKey[]; message: string }[]): 
     .join('; ');
 }
 
+/** The entry's id for messages: only if it is text, and shortened. */
+function idHint(entry: unknown): string {
+  if (typeof entry !== 'object' || entry === null || !('id' in entry)) return '';
+  return typeof entry.id === 'string' ? ` (${entry.id.slice(0, 64)})` : '';
+}
+
 function parseBottles(json: string | null, warnings: string[]): BottleShape[] | null {
   if (json === null || json.trim() === '') return null;
   let data: unknown;
@@ -58,9 +64,7 @@ function parseBottles(json: string | null, warnings: string[]): BottleShape[] | 
   }
   const bottles: BottleShape[] = [];
   data.slice(0, MAX_SHOP_BOTTLES).forEach((entry: unknown, index) => {
-    const label = `Shop bottle ${String(index + 1)}${
-      typeof entry === 'object' && entry !== null && 'id' in entry ? ` (${String(entry.id)})` : ''
-    }`;
+    const label = `Shop bottle ${String(index + 1)}${idHint(entry)}`;
     const named = shopEntrySchema.safeParse(entry);
     if (!named.success) {
       warnings.push(`${label} skipped: ${describe(named.error.issues)}`);
