@@ -20,5 +20,12 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts", "playwright.chrome.config.ts"]
+  "include": [
+    "src",
+    "e2e",
+    "vite.config.ts",
+    "vite.embed.config.ts",
+    "playwright.config.ts",
+    "playwright.chrome.config.ts"
+  ]
 }

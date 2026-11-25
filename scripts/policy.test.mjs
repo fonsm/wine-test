@@ -85,6 +85,17 @@ describe('findNonStaticFiles', () => {
   it('flags a build without index.html', () => {
     expect(findNonStaticFiles(['assets/app.js'])).toEqual(['(missing) index.html']);
   });
+
+  it('can require another entry file (the embedded build has no index.html)', () => {
+    expect(
+      findNonStaticFiles(['wine-label-designer.js', 'wine-label-designer.css', 'wld-a.ttf'], {
+        entry: 'wine-label-designer.js',
+      }),
+    ).toEqual([]);
+    expect(findNonStaticFiles(['wld-a.js'], { entry: 'wine-label-designer.js' })).toEqual([
+      '(missing) wine-label-designer.js',
+    ]);
+  });
 });
 
 describe('initialAssets', () => {

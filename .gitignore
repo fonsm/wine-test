@@ -1,5 +1,6 @@
 node_modules
 dist
+dist-embed
 coverage
 playwright-report
 test-results
