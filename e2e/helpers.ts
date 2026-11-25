@@ -61,7 +61,16 @@ export async function chooseFile(
         bytes.set(source.bytes);
       }
 
-      const input = document.querySelector<HTMLInputElement>(inputSelector);
+      // Also inside open shadow roots (the app embedded in a shop page, see embed.spec.ts).
+      const roots: ParentNode[] = [
+        document,
+        ...[...document.querySelectorAll('*')].flatMap((element) =>
+          element.shadowRoot ? [element.shadowRoot] : [],
+        ),
+      ];
+      const input = roots
+        .map((root) => root.querySelector<HTMLInputElement>(inputSelector))
+        .find((found) => found !== null);
       if (!input) throw new Error(`file input not found: ${inputSelector}`);
       const transfer = new DataTransfer();
       transfer.items.add(new File([bytes], name, { type: mimeType }));

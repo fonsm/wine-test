@@ -2,7 +2,7 @@ import { useId } from 'react';
 import { useT } from '../i18n/I18nContext';
 import type { Design } from '../model/schema';
 import type { BottleShape } from './bottles';
-import { BOTTLES, TEMPLATES } from './catalog';
+import { TEMPLATES, activeBottles } from './catalog';
 import './gallery.css';
 import { silhouette } from './silhouette';
 import { thumbnailUrl } from './thumbnails';
@@ -41,7 +41,7 @@ export function GalleryPanel({ design, onApplyTemplate, onPickBottle }: GalleryP
         {t('templates:replaceHint')}
       </p>
       <div className="gallery-group" role="group" aria-label={t('templates:bottles')}>
-        {BOTTLES.map((bottle) => (
+        {activeBottles().map((bottle) => (
           <button
             key={bottle.id}
             type="button"
@@ -52,7 +52,7 @@ export function GalleryPanel({ design, onApplyTemplate, onPickBottle }: GalleryP
             }}
           >
             <BottleSilhouette bottle={bottle} />
-            <span>{t(`templates:bottleNames.${bottle.id}`)}</span>
+            <span>{bottle.name ?? t(`templates:bottleNames.${bottle.id}`)}</span>
           </button>
         ))}
       </div>

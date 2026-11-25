@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_BOTTLE_ID } from '../model/schema';
-import { bottleParamsSchema, radiusAt } from './bottles';
+import { bottleFromParams, bottleParamsSchema, radiusAt } from './bottles';
+import bordeaux from './data/bottles/bordeaux-750.json';
 import { loadBottles } from './catalog';
 import { ORIGINAL_BORDEAUX_PROFILE } from './testing/bordeauxProfile';
 import { BOTTLES, bottleShape } from './catalog';
@@ -152,5 +153,30 @@ describe('loadBottles', () => {
     expect(() =>
       loadBottles({ './data/bottles/a.json': { ...params('a'), heightMm: 'tall' } }),
     ).toThrow(/a\.json.*heightMm/);
+  });
+});
+
+describe('narrow bottles (for example typed in a shop admin)', () => {
+  const narrow = (bodyDiameterMm: number) => ({
+    ...bordeaux,
+    bodyDiameterMm,
+    neckDiameterMm: bodyDiameterMm / 2,
+  });
+
+  it('rejects a body too narrow for the rounded base edge (it would get a negative radius)', () => {
+    for (const diameter of [2, 6, 8]) {
+      const result = bottleParamsSchema.safeParse(narrow(diameter));
+      expect(result.success, `${String(diameter)} mm`).toBe(false);
+      expect(result.error?.issues.map((issue) => issue.path.join('.'))).toContain('bodyDiameterMm');
+    }
+  });
+
+  it('accepts the narrowest valid body, and its outline never has a negative radius', () => {
+    const result = bottleParamsSchema.safeParse(narrow(8.2));
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    for (const point of bottleFromParams(result.data).profile) {
+      expect(point.r).toBeGreaterThanOrEqual(0);
+    }
   });
 });

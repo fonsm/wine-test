@@ -45,6 +45,15 @@ The browser requests only these files from the server that hosts the app, always
 
 Images the user adds and files the user downloads use `data:` and `blob:` URLs. They exist only in the browser's memory and are never sent anywhere.
 
+## Embedded in a shop (Shopify)
+
+When the app is embedded in a shop page (see README, "Embedding in a shop page"), the same guarantees hold, with one difference decided by the project owner (AGENTS.md): the app's own files may come from the **shop's domain** and from **Shopify's CDN**, which hosts the files of the app's theme extension. Still only `GET` requests for the app's files, and never any user data. `e2e/embed.spec.ts` checks this with a fake shop and CDN.
+
+- The app reads its settings (language, bottles, the product's bottle) from the page itself. It sends nothing back.
+- It does not change the shop page's title or language, and it **stores nothing**, not even the language (it follows the shop's language).
+- **The shop is a separate data controller for its own page.** Shopify and the theme can set cookies, run analytics and log visits on the product page. That is outside the app and must be covered by the shop's own privacy notice. The app's statements here cover only what the app does.
+- **Orders are not part of the app yet.** If designs or PDFs are ever sent to the shop (for example to order printed labels), that is a new data flow and needs a decision and new privacy notes first.
+
 ## Hosting
 
 The app is static files only, so it can run on any web server or static host. **The host itself can see what any web server sees**: the visitor's IP address, the time, the requested file names and the browser's User-Agent, usually in access logs. The app cannot control this. Whoever operates the site should:

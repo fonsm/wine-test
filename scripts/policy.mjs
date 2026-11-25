@@ -89,14 +89,15 @@ export const STATIC_EXTENSIONS = new Set([
 
 /**
  * @param {string[]} files paths relative to the build directory, using "/" separators
- * @returns {string[]} files that are not static assets, plus "(missing) index.html" if absent
+ * @param {{ entry?: string }} [options] the file the build must contain (default index.html)
+ * @returns {string[]} files that are not static assets, plus "(missing) <entry>" if absent
  */
-export function findNonStaticFiles(files) {
+export function findNonStaticFiles(files, { entry = 'index.html' } = {}) {
   const problems = files.filter((file) => {
     const match = /\.([a-z0-9]+)$/i.exec(file);
     return !match?.[1] || !STATIC_EXTENSIONS.has(match[1].toLowerCase());
   });
-  if (!files.includes('index.html')) problems.push('(missing) index.html');
+  if (!files.includes(entry)) problems.push(`(missing) ${entry}`);
   return problems;
 }
 

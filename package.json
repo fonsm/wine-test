@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && node scripts/check-static-output.mjs && node scripts/check-bundle-size.mjs",
+    "build": "tsc --noEmit && vite build && node scripts/check-static-output.mjs && node scripts/check-bundle-size.mjs && npm run build:embed",
+    "build:embed": "vite build --config vite.embed.config.ts && node scripts/check-static-output.mjs dist-embed wine-label-designer.js",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0 && prettier --check .",
     "format": "prettier --write .",

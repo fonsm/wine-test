@@ -25,10 +25,25 @@ const GENERIC_FAMILIES = new Set([
   'system-ui',
 ]);
 
+/**
+ * Embedded in a shop page, the label fonts are registered under their own names with this
+ * prefix (src/embed/fontFaces.ts). A theme may have fonts with the same names, from other
+ * servers, and the app must never make the browser load those. Null: standalone.
+ */
+let fontNamePrefix: string | null = null;
+
+export function setFontNamePrefix(prefix: string | null): void {
+  fontNamePrefix = prefix;
+}
+
 /** CSS font-family value for a family name from a design. Names from files are sanitised. */
 export function cssFontFamily(family: string): string {
   if (GENERIC_FAMILIES.has(family)) return family;
   const known = FONTS.find((font) => font.family === family);
+  if (fontNamePrefix !== null) {
+    // Unknown names could match a theme font; use the generic family instead.
+    return known ? `"${fontNamePrefix}${known.family}", ${known.fallback}` : 'sans-serif';
+  }
   const safeName = family.replace(/["\\;{}<>]/g, '').trim();
   return `"${safeName}", ${known?.fallback ?? 'sans-serif'}`;
 }

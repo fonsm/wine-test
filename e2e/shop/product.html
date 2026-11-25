@@ -1,0 +1,101 @@
+<!doctype html>
+<!--
+  A stand-in for a Shopify product page, for e2e/embed.spec.ts. It has what the shop's theme
+  app extension block will output (see README, "Shopify"), and theme CSS that would break an
+  app that is not isolated. The test serves it at https://wine-shop.example (never on the
+  internet: Playwright answers every request itself).
+-->
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>Eigenes Etikett – Testshop</title>
+    <style>
+      /* A theme font with the same name as a label font, hosted elsewhere. The app must never
+         make the browser load it (the request would go to another origin). */
+      @font-face {
+        font-family: 'Playfair Display';
+        src: url('https://theme-fonts.example/playfair.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Theme Sans';
+        src: url('https://theme-fonts.example/theme-sans.woff2') format('woff2');
+      }
+      /* Like many themes: a 10px root font size, and global element styles. */
+      html {
+        font-size: 62.5%;
+      }
+      body {
+        margin: 0;
+        font-family: Georgia, serif;
+        font-size: 2rem;
+        color: rgb(0, 0, 160);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        line-height: 3;
+      }
+      h2 {
+        font-size: 40px !important;
+        color: rgb(255, 0, 0) !important;
+      }
+      button {
+        background: rgb(255, 0, 0) !important;
+        border-radius: 0 !important;
+        font-size: 30px !important;
+      }
+      * {
+        box-sizing: content-box;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Eigenes Etikett</h1>
+      <div
+        id="wine-label-designer"
+        data-wine-label-designer
+        data-language="de-DE"
+        data-bottle="shop-schlegel"
+      >
+        <script type="application/json">
+          [
+            {
+              "id": "shop-schlegel",
+              "name": "Riesling-Flasche (Shop)",
+              "heightMm": 350,
+              "bodyDiameterMm": 74,
+              "bodyTopMm": 175,
+              "neckDiameterMm": 28,
+              "neckBottomMm": 285,
+              "shoulderCurve": 0.15,
+              "labelZone": { "bottomMm": 12, "topMm": 170 },
+              "capsuleBottomMm": 305,
+              "glassColor": "#5a3a17",
+              "capsuleColor": "#a9a9a9"
+            },
+            {
+              "id": "shop-burgund",
+              "name": "Spätburgunder-Flasche (Shop)",
+              "heightMm": 296,
+              "bodyDiameterMm": 81,
+              "bodyTopMm": 165,
+              "neckDiameterMm": 29,
+              "neckBottomMm": 238,
+              "shoulderCurve": 0.25,
+              "labelZone": { "bottomMm": 12, "topMm": 160 },
+              "capsuleBottomMm": 252,
+              "glassColor": "#3b4a1e",
+              "capsuleColor": "#b8923a"
+            },
+            { "id": "typo", "name": "Typed wrong in the admin", "heightMm": "tall" }
+          ]
+        </script>
+      </div>
+    </main>
+    <script
+      type="module"
+      src="https://cdn.shop.example/extensions/test-extension/assets/wine-label-designer.js"
+    ></script>
+  </body>
+</html>

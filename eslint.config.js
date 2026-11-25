@@ -6,7 +6,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  globalIgnores(['dist', 'playwright-report', 'test-results', 'coverage']),
+  globalIgnores(['dist', 'dist-embed', 'playwright-report', 'test-results', 'coverage']),
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
   {

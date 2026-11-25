@@ -46,6 +46,12 @@ export const bottleParamsSchema = z
     const problem = (path: string, message: string) => {
       ctx.addIssue({ code: 'custom', path: [path], message });
     };
+    // The base edge is rounded with BASE_ROUNDING_MM: a narrower body would get a negative radius.
+    if (bottle.bodyDiameterMm / 2 <= BASE_ROUNDING_MM)
+      problem(
+        'bodyDiameterMm',
+        `The body must be wider than ${String(2 * BASE_ROUNDING_MM)} mm (rounded base edge)`,
+      );
     if (bottle.neckDiameterMm >= bottle.bodyDiameterMm)
       problem('neckDiameterMm', 'The neck must be narrower than the body');
     if (bottle.labelZone.bottomMm < BASE_ROUNDING_MM)
@@ -67,6 +73,8 @@ export type BottleParams = z.infer<typeof bottleParamsSchema>;
 
 export interface BottleShape {
   id: string;
+  /** Display name from the shop (embedded); built-in bottles are named in templates/messages. */
+  name?: string;
   heightMm: number;
   /** Radius of the straight body, where labels go. */
   bodyRadiusMm: number;

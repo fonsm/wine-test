@@ -1,9 +1,11 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { createI18n, type Language } from '../i18n';
 import { I18nProvider } from '../i18n/I18nContext';
 import { createEmptyDesign } from '../model/schema';
-import { BOTTLES, TEMPLATES, templateDesign } from './catalog';
+import bordeaux from './data/bottles/bordeaux-750.json';
+import { bottleFromParams } from './bottles';
+import { BOTTLES, TEMPLATES, setBottleCatalog, templateDesign } from './catalog';
 import { GalleryPanel } from './GalleryPanel';
 import { thumbnailUrl } from './thumbnails';
 
@@ -20,6 +22,22 @@ function render(language: Language = 'en', design = createEmptyDesign()) {
 }
 
 describe('GalleryPanel', () => {
+  afterEach(() => {
+    setBottleCatalog(null);
+  });
+
+  it("offers the shop's bottles with the names from the shop instead of the built-in ones", () => {
+    setBottleCatalog([
+      { ...bottleFromParams({ ...bordeaux, id: 'riesling' }), name: 'Riesling-Flasche' },
+      { ...bottleFromParams({ ...bordeaux, id: 'rose' }), name: 'Rosé-Flasche' },
+    ]);
+    const html = render('de', { ...createEmptyDesign(), bottleId: 'rose' });
+    expect(html).toContain('Riesling-Flasche');
+    expect(html).toMatch(/aria-pressed="true"[^>]*>.*?Rosé-Flasche/);
+    expect(html).not.toContain(createI18n('de').t('templates:bottleNames.bordeaux-750'));
+    expect(html.match(/<button/g)).toHaveLength(TEMPLATES.length + 2);
+  });
+
   it('offers every template and every bottle as a button with its name', () => {
     for (const language of ['en', 'de'] as const) {
       const { t } = createI18n(language);
