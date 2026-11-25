@@ -49,16 +49,18 @@ describe('parseEmbedConfig: bottles from the shop', () => {
       bottlesJson: JSON.stringify([
         shopBottle('good'),
         { ...shopBottle('wide-neck'), neckDiameterMm: 90 },
+        { ...shopBottle('pencil'), bodyDiameterMm: 6, neckDiameterMm: 3 },
         { ...shopBottle('no-name'), name: '  ' },
         shopBottle('good', 'Second good'),
         'not a bottle',
       ]),
     });
     expect(config.bottles?.map((bottle) => bottle.id)).toEqual(['good']);
-    expect(config.warnings).toHaveLength(4);
+    expect(config.warnings).toHaveLength(5);
     expect(config.warnings.join('\n')).toContain('wide-neck');
     expect(config.warnings.join('\n')).toContain('narrower than the body');
     expect(config.warnings.join('\n')).toContain('no-name');
+    expect(config.warnings.join('\n')).toMatch(/pencil.*bodyDiameterMm/);
     expect(config.warnings.join('\n')).toContain('"good" appears twice');
   });
 
