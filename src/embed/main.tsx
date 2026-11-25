@@ -39,6 +39,8 @@ function mount(host: HTMLElement): void {
   const container = document.createElement('div');
   container.className = ROOT_CLASS;
   container.lang = config.language;
+  // German and English are written left to right, also on a right-to-left shop page.
+  container.dir = 'ltr';
   shadow.append(stylesheet, container);
 
   // Render once the styles are there (or failed), so the shop never shows an unstyled app.

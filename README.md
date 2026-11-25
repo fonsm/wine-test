@@ -97,9 +97,9 @@ In a theme app extension, the block's Liquid can write this from the metaobjects
 
 How the embedded app behaves:
 
-- It lives in a **shadow root** on that element, so the theme's CSS does not reach it and its CSS does not reach the theme. Inherited styles are reset, and `rem` sizes are turned into `px`, because themes change the page's root font size (`src/embed/shadowCss.ts`).
+- It lives in a **shadow root** on that element, so the theme's CSS does not reach it and its CSS does not reach the theme. Inherited styles are reset (including the text direction, so a right-to-left shop page does not mirror the app), and `rem` sizes are turned into `px`, because themes change the page's root font size. The layout breakpoints follow the app's own width (container queries), not the window's, because the app often sits in a narrow product column (`src/embed/shadowCss.ts`).
 - It has **no page title, no `<main>` and no language switch**, follows the shop's language, and never changes the shop's document (title, `lang`) or stores anything, not even the language.
-- The label fonts are added to the page with the FontFace API (font rules inside a shadow root are ignored), from the same rules as `src/fonts/fonts.css`. Like before, a font file loads only when a label uses it.
+- The label fonts are added to the page with the FontFace API (font rules inside a shadow root are ignored), from the same rules as `src/fonts/fonts.css`, under **the app's own names** (for example "WLD Playfair Display"). A theme can have a font with the same name, hosted elsewhere; the app must never make the browser load it. For the same reason, a font name the app does not know (for example from a design file) is shown in a generic font instead of being looked up on the page. Like before, a font file loads only when a label uses it.
 - **Network rule** (decided by the project owner, see AGENTS.md): embedded, the app's files may come from the shop's domain and Shopify's CDN, still only `GET` and never with user data.
 - `e2e/embed.spec.ts` checks all this in a fake shop page (`e2e/shop/product.html`) with deliberately hostile theme CSS, with the page and the app's files on two different origins, like a shop and its CDN.
 
@@ -259,6 +259,5 @@ Things that are known and not done yet, roughly by importance:
 15. **Very large labels on the bottle.** A label wider than the bottle's circumference or taller than its straight body shows only its middle in the preview.
 16. **Hosting and server logs** are outside the app (see PRIVACY-NOTES.md, "Hosting").
 17. **Shopify test, not verified in a real shop yet.** The embedded version is tested in a fake shop page only. Things to check in the development store: the real CDN URLs (if Shopify adds a query string such as `?v=…` to asset URLs, the privacy check, which rejects query strings, needs a reviewed rule for that), Shopify's size and file-count limits for extension files (the fonts are 0.3–0.9 MB each), and the Liquid for the metaobjects (the sketch above).
-18. **Font names can clash with the shop theme.** The label fonts are registered on the shop page under their own names (for example "Inter"). If a theme loads a different file under the same name, the label could use the theme's file. Not seen yet; registering them under app-specific names would avoid it.
-19. **One designer per page.** The embedded version starts only on the first `data-wine-label-designer` element.
-20. **No size check for `dist-embed/`.** The bundle-size check covers the standalone build. The embedded main file is about the same size (about 233 kB gzipped).
+18. **One designer per page.** The embedded version starts only on the first `data-wine-label-designer` element.
+19. **No size check for `dist-embed/`.** The bundle-size check covers the standalone build. The embedded main file is about the same size (about 233 kB gzipped).

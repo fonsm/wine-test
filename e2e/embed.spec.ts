@@ -131,6 +131,46 @@ test("the shop theme's CSS does not change the app", async ({ page }) => {
   expect(await Promise.all(targets(page).map(look))).toEqual(standalone);
 });
 
+test('in a narrow column on a wide screen, and on a right-to-left page, the layout holds', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openShop(page);
+  const host = page.locator('#wine-label-designer');
+  const stage = page.getByTestId('label-canvas');
+  const panel = page.getByRole('heading', { name: de('templates:title') });
+  await expect(panel).toBeVisible();
+
+  // Wide column: the panel is next to the label.
+  const wide = { stage: await stage.boundingBox(), panel: await panel.boundingBox() };
+  expect(wide.panel?.x).toBeGreaterThan((wide.stage?.x ?? 0) + (wide.stage?.width ?? 0) - 1);
+
+  // A product column of 400 px with an RTL page around it (for example an Arabic theme).
+  await page.evaluate(() => {
+    document.documentElement.dir = 'rtl';
+    const element = document.querySelector<HTMLElement>('#wine-label-designer');
+    if (element) element.style.width = '400px';
+  });
+  await expect
+    .poll(async () => (await panel.boundingBox())?.y ?? 0)
+    .toBeGreaterThan(
+      ((await stage.boundingBox())?.y ?? 0) + ((await stage.boundingBox())?.height ?? 0) - 1,
+    );
+  const box = await host.boundingBox();
+  for (const target of [stage, panel, page.getByRole('button', { name: de('editor:addText') })]) {
+    const inner = await target.boundingBox();
+    expect(inner?.x ?? -1).toBeGreaterThanOrEqual((box?.x ?? 0) - 1);
+    expect((inner?.x ?? 0) + (inner?.width ?? 0)).toBeLessThanOrEqual(
+      (box?.x ?? 0) + (box?.width ?? 0) + 1,
+    );
+  }
+  expect(
+    await page
+      .getByRole('button', { name: de('editor:addText') })
+      .evaluate((element) => getComputedStyle(element).direction),
+  ).toBe('ltr');
+});
+
 test('no accessibility problems in the embedded app (WCAG 2.2 A and AA, as a11y.spec.ts)', async ({
   page,
 }) => {

@@ -1,12 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import appCss from '../styles.css?raw';
-import { ROOT_CLASS, toShadowCss } from './shadowCss';
+import { CONTAINER_NAME, ROOT_CLASS, toShadowCss } from './shadowCss';
 
 const root = `.${ROOT_CLASS}`;
 
 describe('toShadowCss', () => {
   it('starts with a reset, so nothing the shop theme sets is inherited', () => {
     expect(toShadowCss('')).toMatch(new RegExp(`^\\${root}\\s*\\{[^}]*all:\\s*initial`));
+  });
+
+  it('resets text direction too (not covered by all: initial), for right-to-left shop pages', () => {
+    expect(toShadowCss('')).toMatch(/direction:\s*ltr/);
+  });
+
+  it("lays out by the app's own width, not the window's: the app may sit in a narrow column", () => {
+    expect(toShadowCss('')).toMatch(
+      new RegExp(`container:\\s*${CONTAINER_NAME}\\s*/\\s*inline-size`),
+    );
+    const css = toShadowCss(
+      '@media (width>=900px){.a{b:c}}@media (min-width: 1200px) {.d{e:f}}' +
+        '@media (min-width:600px) and (max-width:899px){.g{h:i}}' +
+        '@media (prefers-reduced-motion:reduce){.j{k:l}}@media print{.m{n:o}}',
+    );
+    expect(css).toContain(`@container ${CONTAINER_NAME} (width>=900px){.a{b:c}}`);
+    expect(css).toContain(`@container ${CONTAINER_NAME} (min-width: 1200px) {.d{e:f}}`);
+    expect(css).toContain(`@container ${CONTAINER_NAME} (min-width:600px) and (max-width:899px){`);
+    expect(css).toContain('@media (prefers-reduced-motion:reduce){.j{k:l}}');
+    expect(css).toContain('@media print{.m{n:o}}');
   });
 
   it('moves page-level rules (:root, html, body) to the app root inside the shadow root', () => {
@@ -41,5 +61,6 @@ describe('toShadowCss', () => {
     expect(css).not.toMatch(/\d+rem\b/);
     expect(css).not.toMatch(/(^|[\s,}])(:root|html|body)\s*[,{]/);
     expect(css).toContain('--color-accent');
+    expect(css).not.toMatch(/@media[^{]*width/);
   });
 });
