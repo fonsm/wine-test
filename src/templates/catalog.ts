@@ -36,17 +36,37 @@ export function loadBottles(files: DataFiles): BottleShape[] {
     .sort((a, b) => a.id.localeCompare(b.id));
 }
 
+/** The built-in bottles. */
 export const BOTTLES: readonly BottleShape[] = loadBottles(
   import.meta.glob('./data/bottles/*.json', { eager: true, import: 'default' }),
 );
 
+/** The bottles the app offers: the built-in ones, or the shop's when embedded (see src/embed). */
+let active: readonly BottleShape[] = BOTTLES;
+
+/** Offers these bottles instead of the built-in ones; null or an empty list restores them. */
+export function setBottleCatalog(bottles: readonly BottleShape[] | null): void {
+  active = bottles && bottles.length > 0 ? bottles : BOTTLES;
+}
+
+export function activeBottles(): readonly BottleShape[] {
+  return active;
+}
+
+/** The bottle new designs start with: the default bottle, or the first one if it is not offered. */
+export function defaultBottleId(): string {
+  const first = active[0];
+  if (!first) throw new Error('no bottles');
+  return active.some((bottle) => bottle.id === DEFAULT_BOTTLE_ID) ? DEFAULT_BOTTLE_ID : first.id;
+}
+
 /** The shape for a design's bottleId; unknown ids (from files) fall back to the default bottle. */
 export function bottleShape(id: string): BottleShape {
-  const found = BOTTLES.find((bottle) => bottle.id === id);
-  if (found) return found;
-  const fallback = BOTTLES.find((bottle) => bottle.id === DEFAULT_BOTTLE_ID);
-  if (!fallback) throw new Error('default bottle missing');
-  return fallback;
+  const fallbackId = defaultBottleId();
+  const found =
+    active.find((bottle) => bottle.id === id) ?? active.find((bottle) => bottle.id === fallbackId);
+  if (!found) throw new Error('default bottle missing');
+  return found;
 }
 
 export interface Template {

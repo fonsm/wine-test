@@ -67,6 +67,8 @@ export type BottleParams = z.infer<typeof bottleParamsSchema>;
 
 export interface BottleShape {
   id: string;
+  /** Display name from the shop (embedded); built-in bottles are named in templates/messages. */
+  name?: string;
   heightMm: number;
   /** Radius of the straight body, where labels go. */
   bodyRadiusMm: number;
