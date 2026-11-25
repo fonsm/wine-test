@@ -1,7 +1,7 @@
 import { expect, test, type Page } from './fixtures';
 import { createI18n } from '../src/i18n';
 import { DESIGN_INPUT, IMAGE_INPUT, captureDownloads, chooseFile, download } from './helpers';
-import { appSources, privacyProblems, type RecordedRequest } from './privacy';
+import { appSources, privacyProblems, recordRequests, type RecordedRequest } from './privacy';
 
 const { t } = createI18n('en');
 const ORIGIN = 'http://localhost:4173';
@@ -12,18 +12,8 @@ const PHOTO_NAME = 'privat-foto-Z9K.jpg';
 const DESIGN_NAME = 'mein-entwurf-K3P.json';
 
 function record(page: Page) {
-  const requests: RecordedRequest[] = [];
-  const sockets: string[] = [];
+  const { requests, sockets } = recordRequests(page);
   const consoleErrors: string[] = [];
-  page.on('request', (request) => {
-    requests.push({
-      url: request.url(),
-      method: request.method(),
-      postData: request.postData(),
-      headers: request.headers(),
-    });
-  });
-  page.on('websocket', (socket) => sockets.push(socket.url()));
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text());
   });
@@ -134,6 +124,23 @@ test.describe('privacy checker (self-test)', () => {
     ).toHaveLength(1);
   });
 
+  test('the recorder sees cookies sent with a request (user data put there on purpose)', async ({
+    page,
+    context,
+  }) => {
+    await context.addCookies([{ name: 'note', value: encodeURIComponent(USER_TEXT), url: ORIGIN }]);
+    const { requests } = record(page);
+    await page.goto('/');
+    await page.evaluate(async () => {
+      await fetch('/assets/probe.js').catch(() => undefined);
+    });
+    const problems = privacyProblems(await requests(), {
+      sources: appSources(ORIGIN),
+      userData: [USER_TEXT],
+    });
+    expect(problems.some((problem) => problem.startsWith('carries user data'))).toBe(true);
+  });
+
   // The test blocks the fake tracker request itself; the browser logs that as an error.
   test.use({ expectedConsoleErrors: [/Failed to load resource: net::ERR_FAILED/] });
 
@@ -149,7 +156,7 @@ test.describe('privacy checker (self-test)', () => {
         () => undefined,
       );
     }, USER_TEXT);
-    const problems = privacyProblems(requests, {
+    const problems = privacyProblems(await requests(), {
       sources: appSources(ORIGIN),
       userData: [USER_TEXT],
     });
@@ -208,9 +215,10 @@ test("full flow: only the app's own files are loaded, nothing about the user is 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(createI18n('de').t('app:title'));
 
   // Network: the app's own files only, nothing the user entered.
-  expect(requests.length).toBeGreaterThan(5);
+  const recorded = await requests();
+  expect(recorded.length).toBeGreaterThan(5);
   expect(
-    privacyProblems(requests, {
+    privacyProblems(recorded, {
       sources: appSources(ORIGIN),
       userData: [USER_TEXT, PHOTO_NAME, DESIGN_NAME],
     }),

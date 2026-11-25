@@ -2,6 +2,8 @@
 // loaded, from the allowed sources (the app's origin; embedded in a shop also the shop page and
 // the CDN with the app's files), and no request may carry user data.
 
+import type { Page } from '@playwright/test';
+
 export interface RecordedRequest {
   url: string;
   method: string;
@@ -55,4 +57,29 @@ export function privacyProblems(
     }
   }
   return problems;
+}
+
+/**
+ * Records every request of the page, and every WebSocket. Headers are read with allHeaders(),
+ * which includes cookies (headers() leaves them out). That is asynchronous, so the list is
+ * read with requests(), which waits for all of them.
+ */
+export function recordRequests(page: Page): {
+  requests: () => Promise<RecordedRequest[]>;
+  sockets: string[];
+} {
+  const pending: Promise<RecordedRequest>[] = [];
+  const sockets: string[] = [];
+  page.on('request', (request) => {
+    const base = { url: request.url(), method: request.method(), postData: request.postData() };
+    pending.push(
+      request
+        .allHeaders()
+        // A request can end before its headers are read; its provisional headers remain.
+        .catch(() => request.headers())
+        .then((headers) => ({ ...base, headers })),
+    );
+  });
+  page.on('websocket', (socket) => sockets.push(socket.url()));
+  return { requests: () => Promise.all(pending), sockets };
 }
