@@ -1,4 +1,4 @@
-import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import { expect, test, type Page, type TestInfo } from './fixtures';
 import { createI18n } from '../src/i18n';
 import { BLEED_MM, LABEL_HEIGHT_MM, LABEL_WIDTH_MM } from '../src/print/geometry';
 import { IMAGE_INPUT, chooseFile } from './helpers';

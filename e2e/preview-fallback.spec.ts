@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createI18n } from '../src/i18n';
 import { sameBytes, screenshotBytes } from './helpers';
 

@@ -5,6 +5,7 @@ import { I18nProvider } from '../i18n/I18nContext';
 import { createEmptyDesign } from '../model/schema';
 import { BOTTLES, TEMPLATES, templateDesign } from './catalog';
 import { GalleryPanel } from './GalleryPanel';
+import { thumbnailUrl } from './thumbnails';
 
 function render(language: Language = 'en', design = createEmptyDesign()) {
   return renderToStaticMarkup(
@@ -41,6 +42,15 @@ describe('GalleryPanel', () => {
     expect(pressed.some((inner) => inner.includes(t('templates:bottleNames.sparkling-750')))).toBe(
       true,
     );
+  });
+
+  it('shows the pre-rendered thumbnail of every template (no fonts needed)', () => {
+    const html = render();
+    for (const { id } of TEMPLATES) {
+      const url = thumbnailUrl(id);
+      expect(url).not.toBeNull();
+      expect(html).toContain(`<img src="${url ?? ''}" alt=""`);
+    }
   });
 
   it('says that a template replaces the label and can be undone', () => {

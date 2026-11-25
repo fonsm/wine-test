@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
+import { expect, test, type Locator, type Page, type TestInfo } from './fixtures';
 import { createI18n } from '../src/i18n';
 import { recordNetworkRequests, sameBytes, screenshotBytes } from './helpers';
 
