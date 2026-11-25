@@ -113,6 +113,27 @@ test.describe('privacy checker (self-test)', () => {
     expect(problems).toContain(`carries user data "${USER_TEXT}"`);
   });
 
+  test('several path rules for the same origin: a request may match any of them', () => {
+    const get = (url: string): RecordedRequest => ({
+      url,
+      method: 'GET',
+      postData: null,
+      headers: {},
+    });
+    const sources = [
+      { origin: 'https://shop.example', paths: /^\/products\/[\w-]+$/ },
+      { origin: 'https://shop.example', paths: /^\/cdn\/shop\/extensions\/x1\/assets\/[\w.-]+$/ },
+    ];
+    const requests = [
+      get('https://shop.example/products/custom-label'),
+      get('https://shop.example/cdn/shop/extensions/x1/assets/wine-label-designer.js'),
+    ];
+    expect(privacyProblems(requests, { sources, userData: [] })).toEqual([]);
+    expect(
+      privacyProblems([get('https://shop.example/cart.js')], { sources, userData: [] }),
+    ).toHaveLength(1);
+  });
+
   // The test blocks the fake tracker request itself; the browser logs that as an error.
   test.use({ expectedConsoleErrors: [/Failed to load resource: net::ERR_FAILED/] });
 

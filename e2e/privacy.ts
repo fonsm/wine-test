@@ -39,12 +39,12 @@ export function privacyProblems(
     // In-memory URLs (images, downloads) never leave the browser.
     if (url.protocol === 'data:' || url.protocol === 'blob:') continue;
     const where = `${request.method} ${request.url}`;
-    const source = sources.find((candidate) => candidate.origin === url.origin);
-    if (!source) problems.push(`request to another origin: ${where}`);
+    const rules = sources.filter((candidate) => candidate.origin === url.origin);
+    if (rules.length === 0) problems.push(`request to another origin: ${where}`);
     if (request.method !== 'GET') problems.push(`sends data (${request.method}): ${where}`);
     if (request.postData) problems.push(`has a request body: ${where}`);
     if (url.search || url.hash) problems.push(`has a query string or fragment: ${where}`);
-    if (source && !source.paths.test(url.pathname)) {
+    if (rules.length > 0 && !rules.some((rule) => rule.paths.test(url.pathname))) {
       problems.push(`not one of the app's static files: ${where}`);
     }
     const sent = [request.url, request.postData ?? '', ...Object.values(request.headers)].join(
