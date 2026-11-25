@@ -5,7 +5,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from './fixtures';
 import { createI18n } from '../src/i18n';
 import { IMAGE_INPUT, captureDownloads, chooseFile, download } from './helpers';
-import { privacyProblems, type AllowedSource, type RecordedRequest } from './privacy';
+import { privacyProblems, recordRequests, type AllowedSource } from './privacy';
 
 const SHOP = 'https://wine-shop.example';
 const PRODUCT_PATH = '/products/custom-label';
@@ -24,16 +24,8 @@ const CONTENT_TYPES: Record<string, string> = {
 };
 
 /** Serves the fake shop page and the built embed files (dist-embed) as the CDN. */
-async function openShop(page: Page): Promise<RecordedRequest[]> {
-  const requests: RecordedRequest[] = [];
-  page.on('request', (request) => {
-    requests.push({
-      url: request.url(),
-      method: request.method(),
-      postData: request.postData(),
-      headers: request.headers(),
-    });
-  });
+async function openShop(page: Page): Promise<ReturnType<typeof recordRequests>> {
+  const recorder = recordRequests(page);
   await page.route(`${SHOP}/**`, (route) =>
     new URL(route.request().url()).pathname === PRODUCT_PATH
       ? route.fulfill({ path: 'e2e/shop/product.html', contentType: 'text/html' })
@@ -57,7 +49,7 @@ async function openShop(page: Page): Promise<RecordedRequest[]> {
     route.fulfill({ status: 200, body: '', headers: { 'access-control-allow-origin': '*' } }),
   );
   await page.goto(`${SHOP}${PRODUCT_PATH}`);
-  return requests;
+  return recorder;
 }
 
 const SOURCES: AllowedSource[] = [
@@ -207,7 +199,7 @@ test("full flow: only the shop page and the app's files on the CDN, nothing abou
   context,
 }) => {
   await captureDownloads(page);
-  const requests = await openShop(page);
+  const { requests: recordedRequests, sockets } = await openShop(page);
   await expect(page.getByTestId('bottle-preview')).toHaveAttribute('data-mode', /3d|flat/, {
     timeout: 20_000,
   });
@@ -229,6 +221,8 @@ test("full flow: only the shop page and the app's files on the CDN, nothing abou
   const { bytes } = await download(page, de('export:download'));
   expect(new TextDecoder('latin1').decode(bytes.slice(0, 5))).toBe('%PDF-');
   await expect(page.getByTestId('export-status')).toHaveText(de('export:done'));
+
+  const requests = await recordedRequests();
 
   // Every element of the app (the root and all inside it; the <link> next to it shows no
   // text) names only generic fonts or the app's own label fonts (WLD …),
@@ -256,8 +250,16 @@ test("full flow: only the shop page and the app's files on the CDN, nothing abou
   expect(
     privacyProblems(requests, { sources: SOURCES, userData: [USER_TEXT, PHOTO_NAME] }),
   ).toEqual([]);
+  expect(sockets).toEqual([]);
+
+  // Nothing stored: no cookies, no web storage, no IndexedDB, no service worker.
   expect(await context.cookies()).toEqual([]);
-  expect(
-    await page.evaluate(() => [Object.keys(localStorage), Object.keys(sessionStorage)]),
-  ).toEqual([[], []]);
+  const stored = await page.evaluate(async () => ({
+    local: Object.keys(localStorage),
+    session: Object.keys(sessionStorage),
+    cookie: document.cookie,
+    workers: (await navigator.serviceWorker.getRegistrations()).length,
+    databases: (await indexedDB.databases()).length,
+  }));
+  expect(stored).toEqual({ local: [], session: [], cookie: '', workers: 0, databases: 0 });
 });
