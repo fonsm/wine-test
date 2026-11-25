@@ -1,7 +1,7 @@
 import { expect, test, type Page } from './fixtures';
 import { createI18n } from '../src/i18n';
 import { DESIGN_INPUT, IMAGE_INPUT, captureDownloads, chooseFile, download } from './helpers';
-import { privacyProblems, type RecordedRequest } from './privacy';
+import { appSources, privacyProblems, type RecordedRequest } from './privacy';
 
 const { t } = createI18n('en');
 const ORIGIN = 'http://localhost:4173';
@@ -47,7 +47,7 @@ test.describe('privacy checker (self-test)', () => {
           get('data:image/png;base64,AAAA'),
           get('blob:http://localhost:4173/1234'),
         ],
-        { origin: ORIGIN, userData: [USER_TEXT] },
+        { sources: appSources(ORIGIN), userData: [USER_TEXT] },
       ),
     ).toEqual([]);
 
@@ -58,7 +58,7 @@ test.describe('privacy checker (self-test)', () => {
         get(`${ORIGIN}/assets/app.js?name=Privates%20Weingut%20Q7X`),
         { ...get(`${ORIGIN}/assets/a.js`), headers: { 'x-note': 'privat-foto-Z9K.jpg' } },
       ],
-      { origin: ORIGIN, userData: [USER_TEXT, PHOTO_NAME] },
+      { sources: appSources(ORIGIN), userData: [USER_TEXT, PHOTO_NAME] },
     );
     expect(problems.join('\n')).toContain(
       'request to another origin: GET https://fonts.example.com',
@@ -69,6 +69,48 @@ test.describe('privacy checker (self-test)', () => {
     expect(problems.join('\n')).toContain('has a query string');
     expect(problems.join('\n')).toContain(`carries user data "${USER_TEXT}"`);
     expect(problems.join('\n')).toContain(`carries user data "${PHOTO_NAME}"`);
+  });
+
+  test('embedded in a shop: the shop page and the app files on the CDN only (AGENTS.md)', () => {
+    const get = (url: string): RecordedRequest => ({
+      url,
+      method: 'GET',
+      postData: null,
+      headers: {},
+    });
+    const sources = [
+      { origin: 'https://shop.example', paths: /^\/products\/[\w-]+$/ },
+      { origin: 'https://cdn.example', paths: /^\/extensions\/x1\/assets\/[\w.-]+$/ },
+    ];
+    expect(
+      privacyProblems(
+        [
+          get('https://shop.example/products/custom-label'),
+          get('https://cdn.example/extensions/x1/assets/wine-label-designer.js'),
+          get('https://cdn.example/extensions/x1/assets/font-abc.ttf'),
+        ],
+        { sources, userData: [USER_TEXT] },
+      ),
+    ).toEqual([]);
+
+    const problems = privacyProblems(
+      [
+        get('https://cdn.example/other-app/tracker.js'),
+        get('https://shop.example/cart.js'),
+        get(`${ORIGIN}/assets/index-abc.js`),
+        get('https://cdn.example/extensions/x1/assets/a.js?text=Privates%20Weingut%20Q7X'),
+      ],
+      { sources, userData: [USER_TEXT] },
+    ).join('\n');
+    expect(problems).toContain(
+      "not one of the app's static files: GET https://cdn.example/other-app/tracker.js",
+    );
+    expect(problems).toContain(
+      "not one of the app's static files: GET https://shop.example/cart.js",
+    );
+    expect(problems).toContain(`request to another origin: GET ${ORIGIN}/assets/index-abc.js`);
+    expect(problems).toContain('has a query string');
+    expect(problems).toContain(`carries user data "${USER_TEXT}"`);
   });
 
   // The test blocks the fake tracker request itself; the browser logs that as an error.
@@ -86,7 +128,10 @@ test.describe('privacy checker (self-test)', () => {
         () => undefined,
       );
     }, USER_TEXT);
-    const problems = privacyProblems(requests, { origin: ORIGIN, userData: [USER_TEXT] });
+    const problems = privacyProblems(requests, {
+      sources: appSources(ORIGIN),
+      userData: [USER_TEXT],
+    });
     expect(problems.some((problem) => problem.startsWith('request to another origin'))).toBe(true);
     expect(problems.some((problem) => problem.startsWith('carries user data'))).toBe(true);
   });
@@ -144,7 +189,10 @@ test("full flow: only the app's own files are loaded, nothing about the user is 
   // Network: the app's own files only, nothing the user entered.
   expect(requests.length).toBeGreaterThan(5);
   expect(
-    privacyProblems(requests, { origin: ORIGIN, userData: [USER_TEXT, PHOTO_NAME, DESIGN_NAME] }),
+    privacyProblems(requests, {
+      sources: appSources(ORIGIN),
+      userData: [USER_TEXT, PHOTO_NAME, DESIGN_NAME],
+    }),
   ).toEqual([]);
   expect(sockets).toEqual([]);
 

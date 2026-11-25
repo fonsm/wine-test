@@ -14,6 +14,7 @@ Fixed decisions and working rules for this repository. Every contributor, human 
 - **No user data leaves the browser.** Photos, text and designs are processed and stored locally only (memory, or browser storage if needed).
 - **No third-party requests at runtime.** Fonts, scripts, styles, icons and other assets are self-hosted and bundled. No CDNs, Google Fonts, or external embeds.
 - Any change that adds a network request must be treated as a bug unless it loads the app's own static assets.
+- **Shopify embedding** (decided by the project owner, 2026-11-25): when the app is embedded in a Shopify shop, its own static files may come from the **shop's own domain** and from **Shopify's CDN** (where Shopify hosts an app's theme extension files). No other origin. These requests are still only `GET` requests for the app's own files and must never carry user data. The standalone app stays same-origin only.
 
 ## Tech stack
 
