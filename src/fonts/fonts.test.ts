@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { DEFAULT_FONT_FAMILY, FONTS, cssFontFamily } from './fonts';
+import { afterEach, describe, expect, it } from 'vitest';
+import { DEFAULT_FONT_FAMILY, FONTS, cssFontFamily, setFontNamePrefix } from './fonts';
 
 describe('fonts', () => {
   it('offers the four bundled fonts', () => {
@@ -21,5 +21,23 @@ describe('fonts', () => {
   it('passes generic families through and quotes unknown ones safely', () => {
     expect(cssFontFamily('serif')).toBe('serif');
     expect(cssFontFamily('My "Font"; x')).toBe('"My Font x", sans-serif');
+  });
+
+  describe('embedded in a shop page: own font names', () => {
+    afterEach(() => {
+      setFontNamePrefix(null);
+    });
+
+    it('uses the names the app registered, so a theme font with the same name is never used', () => {
+      setFontNamePrefix('WLD ');
+      expect(cssFontFamily('Playfair Display')).toBe('"WLD Playfair Display", serif');
+      expect(cssFontFamily('Great Vibes')).toBe('"WLD Great Vibes", cursive');
+    });
+
+    it("never names an unknown font (it could be one of the theme's, loaded from elsewhere)", () => {
+      setFontNamePrefix('WLD ');
+      expect(cssFontFamily('Theme Sans')).toBe('sans-serif');
+      expect(cssFontFamily('serif')).toBe('serif');
+    });
   });
 });

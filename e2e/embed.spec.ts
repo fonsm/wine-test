@@ -52,6 +52,10 @@ async function openShop(page: Page): Promise<RecordedRequest[]> {
       headers: { 'access-control-allow-origin': '*' },
     });
   });
+  // The theme's own fonts (see product.html). Answered here so a request is recorded, not sent.
+  await page.route('https://theme-fonts.example/**', (route) =>
+    route.fulfill({ status: 200, body: '', headers: { 'access-control-allow-origin': '*' } }),
+  );
   await page.goto(`${SHOP}${PRODUCT_PATH}`);
   return requests;
 }
@@ -186,9 +190,10 @@ test("full flow: only the shop page and the app's files on the CDN, nothing abou
   expect(new TextDecoder('latin1').decode(bytes.slice(0, 5))).toBe('%PDF-');
   await expect(page.getByTestId('export-status')).toHaveText(de('export:done'));
 
-  // The label fonts came from the CDN and are in use.
+  // The label fonts came from the CDN and are in use, under the app's own names; the theme's
+  // font with the same name (product.html) was never loaded.
   expect(requests.some(({ url }) => url.startsWith(CDN) && url.endsWith('.ttf'))).toBe(true);
-  expect(await page.evaluate(() => document.fonts.check('16px "Playfair Display"'))).toBe(true);
+  expect(await page.evaluate(() => document.fonts.check('16px "WLD Playfair Display"'))).toBe(true);
 
   expect(
     privacyProblems(requests, { sources: SOURCES, userData: [USER_TEXT, PHOTO_NAME] }),

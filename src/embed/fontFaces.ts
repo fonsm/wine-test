@@ -3,6 +3,10 @@
 // same rules as fonts.css (the single list of font files). Like @font-face, a registered face
 // is only downloaded when text uses it.
 import fontsCss from '../fonts/fonts.css?raw';
+import { setFontNamePrefix } from '../fonts/fonts';
+
+/** Prefix of the label fonts' names on the shop page (see setFontNamePrefix). */
+export const EMBED_FONT_PREFIX = 'WLD ';
 
 export interface ParsedFontFace {
   family: string;
@@ -38,21 +42,25 @@ const FONT_URLS = import.meta.glob<string>('../assets/fonts/*.ttf', {
   import: 'default',
 });
 
-export function embedFontFaces(): (ParsedFontFace & { url: string })[] {
+export function embedFontFaces(): (ParsedFontFace & { url: string; pageFamily: string })[] {
   return parseFontFaces(fontsCss).map((face) => {
     const url = Object.entries(FONT_URLS).find(([path]) => path.endsWith(`/${face.file}`))?.[1];
     if (!url) throw new Error(`Font file ${face.file} not found`);
-    return { ...face, url };
+    return { ...face, url, pageFamily: `${EMBED_FONT_PREFIX}${face.family}` };
   });
 }
 
 let registered = false;
 
-/** Adds the label fonts to the page once. They load when the label first uses them. */
+/**
+ * Adds the label fonts to the page once, under the app's own names, and makes the app use
+ * those names. They load when the label first uses them.
+ */
 export function registerFonts(fonts: FontFaceSet): void {
   if (registered) return;
   registered = true;
+  setFontNamePrefix(EMBED_FONT_PREFIX);
   for (const face of embedFontFaces()) {
-    fonts.add(new FontFace(face.family, `url(${face.url})`, face.descriptors));
+    fonts.add(new FontFace(face.pageFamily, `url(${face.url})`, face.descriptors));
   }
 }

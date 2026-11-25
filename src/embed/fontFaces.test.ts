@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fontsCss from '../fonts/fonts.css?raw';
 import { FONTS } from '../fonts/fonts';
-import { embedFontFaces, parseFontFaces } from './fontFaces';
+import { EMBED_FONT_PREFIX, embedFontFaces, parseFontFaces } from './fontFaces';
 
 describe('font faces for the embedded app', () => {
   it('reads every @font-face rule of fonts.css (the single source of the font files)', () => {
@@ -20,7 +20,11 @@ describe('font faces for the embedded app', () => {
   it("finds each font file among the app's built files", () => {
     const faces = embedFontFaces();
     expect(faces).toHaveLength(parseFontFaces(fontsCss).length);
-    for (const face of faces) expect(face.url).toMatch(/\.ttf$/);
+    for (const face of faces) {
+      expect(face.url).toMatch(/\.ttf$/);
+      // Registered under the app's own names, never under a name a shop theme may use.
+      expect(face.pageFamily).toBe(`${EMBED_FONT_PREFIX}${face.family}`);
+    }
   });
 
   it('rejects rules without a family or a file', () => {

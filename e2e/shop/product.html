@@ -12,6 +12,16 @@
     <link rel="icon" href="data:," />
     <title>Eigenes Etikett – Testshop</title>
     <style>
+      /* A theme font with the same name as a label font, hosted elsewhere. The app must never
+         make the browser load it (the request would go to another origin). */
+      @font-face {
+        font-family: 'Playfair Display';
+        src: url('https://theme-fonts.example/playfair.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Theme Sans';
+        src: url('https://theme-fonts.example/theme-sans.woff2') format('woff2');
+      }
       /* Like many themes: a 10px root font size, and global element styles. */
       html {
         font-size: 62.5%;
