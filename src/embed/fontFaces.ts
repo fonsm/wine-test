@@ -59,15 +59,20 @@ export function embedFontFaces(): EmbedFontFace[] {
   });
 }
 
-/** The faces that font shorthands (as for document.fonts.load) need: their family and style. */
+/**
+ * The faces that font shorthands (as for document.fonts.load) need: their family and style.
+ * A family without the wanted style gets its other faces, like the browser, which then slants
+ * the normal face (Great Vibes has no italic).
+ */
 export function facesForSpecs(specs: readonly string[], faces: readonly EmbedFontFace[]) {
-  return faces.filter((face) =>
-    specs.some(
-      (spec) =>
-        spec.includes(`"${face.pageFamily}"`) &&
-        spec.startsWith('italic') === (face.descriptors.style === 'italic'),
-    ),
-  );
+  const needed = new Set<EmbedFontFace>();
+  for (const spec of specs) {
+    const family = faces.filter((face) => spec.includes(`"${face.pageFamily}"`));
+    const italic = spec.startsWith('italic');
+    const styled = family.filter((face) => (face.descriptors.style === 'italic') === italic);
+    for (const face of styled.length > 0 ? styled : family) needed.add(face);
+  }
+  return faces.filter((face) => needed.has(face));
 }
 
 interface FontTarget<Face> {
@@ -82,7 +87,9 @@ export function createFontPreparer<Face>(
 ): (specs: readonly string[]) => Promise<void> {
   const added = new Map<EmbedFontFace, Promise<void>>();
   return async (specs) => {
-    await Promise.all(
+    // allSettled: a face that fails (for example offline) must not stop the wait for the
+    // others, or the label would be drawn before they are there.
+    await Promise.allSettled(
       facesForSpecs(specs, faces).map((face) => {
         let done = added.get(face);
         if (!done) {

@@ -52,6 +52,47 @@ describe('font faces for the embedded app', () => {
     );
   });
 
+  it('uses the normal face for italic text when a font has no italic (like the browser does)', () => {
+    const faces = embedFontFaces();
+    expect(
+      facesForSpecs(['italic normal 16px "WLD Great Vibes", cursive'], faces).map(
+        (face) => `${face.family} ${face.descriptors.style}`,
+      ),
+    ).toEqual(['Great Vibes normal']);
+  });
+
+  it('waits for every needed face, even when another one fails to load', async () => {
+    const added: string[] = [];
+    let finishSlow: (data: string) => void = () => undefined;
+    const faces = embedFontFaces().map((face) => ({
+      ...face,
+      load: () =>
+        face.family === 'Inter'
+          ? Promise.reject(new Error('offline'))
+          : new Promise<string>((resolve) => {
+              finishSlow = resolve;
+            }),
+    }));
+    const prepare = createFontPreparer(
+      { add: (face: { family: string }) => added.push(face.family) },
+      faces,
+      (family) => ({ family }),
+    );
+    let settled = false;
+    const done = prepare([
+      'normal normal 16px "WLD Inter", sans-serif',
+      'normal normal 16px "WLD Great Vibes", cursive',
+    ]).then(
+      () => (settled = true),
+      () => (settled = true),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(settled).toBe(false);
+    finishSlow('data:font/ttf;base64,AAEAAA');
+    await done;
+    expect(added).toEqual(['WLD Great Vibes']);
+  });
+
   it('adds each needed face to the page once, from its data, also for overlapping calls', async () => {
     const added: string[] = [];
     let loads = 0;
