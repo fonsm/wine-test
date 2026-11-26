@@ -244,7 +244,10 @@ test("full flow: only the shop page and the app's files on the CDN, nothing abou
 
   // The label fonts came from the CDN and are in use, under the app's own names; the theme's
   // font with the same name (product.html) was never loaded.
-  expect(requests.some(({ url }) => url.startsWith(CDN) && url.endsWith('.ttf'))).toBe(true);
+  // Shopify accepts no font files in an extension, so each font comes as a script.
+  const fromCdn = requests.filter(({ url }) => url.startsWith(CDN)).map(({ url }) => url);
+  expect(fromCdn.some((url) => /\/wld-PlayfairDisplay-[\w-]+\.js$/.test(url))).toBe(true);
+  expect(fromCdn.filter((url) => !/\.(jpe?g|js|css|png|svg|json|wasm)$/.test(url))).toEqual([]);
   expect(await page.evaluate(() => document.fonts.check('16px "WLD Playfair Display"'))).toBe(true);
 
   expect(

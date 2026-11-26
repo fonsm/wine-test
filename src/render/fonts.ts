@@ -13,7 +13,23 @@ export function designFontSpecs(design: Design): string[] {
   return [...specs].sort();
 }
 
-/** Loads the given fonts (self-hosted files, same origin). Fonts that fail to load are skipped. */
+type FontPreparer = (specs: readonly string[]) => Promise<void>;
+
+/**
+ * Embedded in a shop, the font files cannot be plain files (src/embed/fontFaces.ts): a preparer
+ * fetches the fonts a design needs and adds them to the page first. Null: standalone, where
+ * fonts.css lists the files and the browser fetches them itself.
+ */
+let preparer: FontPreparer | null = null;
+
+export function setFontPreparer(prepare: FontPreparer | null): void {
+  preparer = prepare;
+}
+
+/** Loads the given fonts (self-hosted, never from elsewhere). Fonts that fail are skipped. */
 export async function loadFonts(specs: readonly string[]): Promise<void> {
+  if (preparer) {
+    await preparer(specs).catch(() => undefined);
+  }
   await Promise.allSettled(specs.map((spec) => document.fonts.load(spec)));
 }

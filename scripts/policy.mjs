@@ -88,14 +88,33 @@ export const STATIC_EXTENSIONS = new Set([
 ]);
 
 /**
+ * The only file types a Shopify theme app extension accepts in its assets folder (the Shopify
+ * CLI rejects all others, fonts included). Checked on the embedded build.
+ */
+export const SHOPIFY_ASSET_EXTENSIONS = new Set([
+  'jpg',
+  'jpeg',
+  'js',
+  'css',
+  'png',
+  'svg',
+  'json',
+  'wasm',
+]);
+
+/**
  * @param {string[]} files paths relative to the build directory, using "/" separators
- * @param {{ entry?: string }} [options] the file the build must contain (default index.html)
+ * @param {{ entry?: string, extensions?: Set<string> }} [options] the file the build must
+ *   contain (default index.html), and the allowed file types (default STATIC_EXTENSIONS)
  * @returns {string[]} files that are not static assets, plus "(missing) <entry>" if absent
  */
-export function findNonStaticFiles(files, { entry = 'index.html' } = {}) {
+export function findNonStaticFiles(
+  files,
+  { entry = 'index.html', extensions = STATIC_EXTENSIONS } = {},
+) {
   const problems = files.filter((file) => {
     const match = /\.([a-z0-9]+)$/i.exec(file);
-    return !match?.[1] || !STATIC_EXTENSIONS.has(match[1].toLowerCase());
+    return !match?.[1] || !extensions.has(match[1].toLowerCase());
   });
   if (!files.includes(entry)) problems.push(`(missing) ${entry}`);
   return problems;

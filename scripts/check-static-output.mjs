@@ -1,12 +1,15 @@
 // Fails if the build output contains anything other than static files a plain web host can serve.
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { findNonStaticFiles } from './policy.mjs';
+import { SHOPIFY_ASSET_EXTENSIONS, findNonStaticFiles } from './policy.mjs';
 
 // The folder to check and its entry file: dist/ with index.html (standalone app), or the ones
-// given, for example: dist-embed wine-label-designer.js
-const folder = process.argv[2] ?? 'dist';
-const entry = process.argv[3] ?? 'index.html';
+// given, for example: dist-embed wine-label-designer.js --shopify
+// --shopify: only the file types a Shopify theme app extension accepts.
+const [folder = 'dist', entry = 'index.html'] = process.argv
+  .slice(2)
+  .filter((arg) => !arg.startsWith('--'));
+const shopify = process.argv.includes('--shopify');
 const distDir = fileURLToPath(new URL(`../${folder}/`, import.meta.url));
 
 let files;
@@ -24,9 +27,16 @@ try {
   process.exit(1);
 }
 
-const problems = findNonStaticFiles(files, { entry });
+const problems = findNonStaticFiles(files, {
+  entry,
+  ...(shopify ? { extensions: SHOPIFY_ASSET_EXTENSIONS } : {}),
+});
 if (problems.length > 0) {
-  console.error('Build output contains non-static files:');
+  console.error(
+    shopify
+      ? 'Build output contains files a Shopify theme app extension does not accept:'
+      : 'Build output contains non-static files:',
+  );
   console.error(problems.map((p) => `  ${p}`).join('\n'));
   process.exit(1);
 }
