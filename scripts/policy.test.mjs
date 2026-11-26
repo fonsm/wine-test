@@ -3,6 +3,7 @@ import {
   BUNDLE_BUDGETS,
   bundleProblems,
   checkLicense,
+  SHOPIFY_ASSET_EXTENSIONS,
   findNonStaticFiles,
   initialAssets,
 } from './policy.mjs';
@@ -84,6 +85,24 @@ describe('findNonStaticFiles', () => {
 
   it('flags a build without index.html', () => {
     expect(findNonStaticFiles(['assets/app.js'])).toEqual(['(missing) index.html']);
+  });
+
+  it("can allow only Shopify's file types for an extension's assets (no fonts)", () => {
+    const files = [
+      'wine-label-designer.js',
+      'wine-label-designer.css',
+      'wld-a.png',
+      'wld-font.ttf',
+    ];
+    expect(
+      findNonStaticFiles(files, {
+        entry: 'wine-label-designer.js',
+        extensions: SHOPIFY_ASSET_EXTENSIONS,
+      }),
+    ).toEqual(['wld-font.ttf']);
+    expect([...SHOPIFY_ASSET_EXTENSIONS].sort()).toEqual(
+      ['css', 'jpeg', 'jpg', 'js', 'json', 'png', 'svg', 'wasm'].sort(),
+    );
   });
 
   it('can require another entry file (the embedded build has no index.html)', () => {
