@@ -163,6 +163,78 @@ test('in a narrow column on a wide screen, and on a right-to-left page, the layo
   ).toBe('ltr');
 });
 
+test('takes the full width also in theme layouts that size blocks to their content', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openShop(page);
+  await expect(page.getByRole('heading', { name: de('templates:title') })).toBeVisible();
+  const host = page.locator('#wine-label-designer');
+  const panel = page.getByRole('heading', { name: de('templates:title') });
+
+  // How themes lay out the blocks of a section (the designer's element is a child of <main>).
+  // Flex and block layouts give the block a width: the designer takes all of it. Layouts that
+  // size a block only by its content (inline-block, an auto grid column) give it none: then
+  // the designer takes the phone width instead of collapsing.
+  const layouts = [
+    {
+      name: 'flex column, items at the start',
+      css: 'display:flex;flex-direction:column;align-items:flex-start',
+      full: true,
+    },
+    { name: 'flex row', css: 'display:flex;flex-direction:row', full: true },
+    { name: 'block', css: 'display:block', full: true },
+    {
+      name: 'grid with an auto column',
+      css: 'display:grid;grid-template-columns:auto;justify-content:start',
+      full: false,
+    },
+    { name: 'inline-block wrapper', css: 'display:block', wrap: true, full: false },
+  ];
+  for (const { name, css, wrap = false, full } of layouts) {
+    await page.evaluate(
+      ([style, wrapIt]) => {
+        const main = document.querySelector('main');
+        const element = document.querySelector<HTMLElement>('#wine-label-designer');
+        if (!main || !element) return;
+        main.setAttribute('style', style ?? '');
+        if (wrapIt === 'true') {
+          const wrapper = document.createElement('div');
+          wrapper.style.display = 'inline-block';
+          main.insertBefore(wrapper, element);
+          wrapper.append(element);
+        }
+      },
+      [css, String(wrap)],
+    );
+    // The room for the designer: the section's width, less what other items take in a row.
+    const available = await page.locator('main').evaluate((main) => {
+      const style = getComputedStyle(main);
+      if (style.display !== 'flex' || style.flexDirection !== 'row') return main.clientWidth;
+      const others = [...main.children].filter(
+        (child) => !child.contains(document.querySelector('#wine-label-designer')),
+      );
+      const gaps = parseFloat(style.columnGap) || 0;
+      return (
+        main.clientWidth -
+        others.reduce((sum, child) => sum + child.getBoundingClientRect().width + gaps, 0)
+      );
+    });
+    const width = async () => (await host.boundingBox())?.width ?? 0;
+    // Wait for the layout (slow with software graphics), then check with the measured value,
+    // so a failure shows the width.
+    const minimum = full ? available * 0.95 : 319;
+    await expect
+      .poll(width, { timeout: 15_000 })
+      .toBeGreaterThanOrEqual(minimum)
+      .catch(() => undefined);
+    expect(await width(), name).toBeGreaterThanOrEqual(minimum);
+    expect(await width(), name).toBeLessThanOrEqual(available + 1);
+    // The app inside is usable at that width.
+    expect((await panel.boundingBox())?.width ?? 0, name).toBeGreaterThan(200);
+  }
+});
+
 test('no accessibility problems in the embedded app (WCAG 2.2 A and AA, as a11y.spec.ts)', async ({
   page,
 }) => {

@@ -31,6 +31,13 @@ describe('toShadowCss', () => {
     expect(toShadowCss('')).toMatch(/direction:\s*ltr/);
   });
 
+  it('takes the full width it is given, and the phone width where a theme gives none', () => {
+    const css = toShadowCss('');
+    expect(css).toMatch(/:host\s*\{[^}]*display:\s*block[^}]*width:\s*100%/);
+    expect(css).toMatch(new RegExp(`\\${root}\\s*\\{[^}]*width:\\s*100%`));
+    expect(css).toMatch(/contain-intrinsic-inline-size:\s*320px/);
+  });
+
   it("lays out by the app's own width, not the window's: the app may sit in a narrow column", () => {
     expect(toShadowCss('')).toMatch(
       new RegExp(`container:\\s*${CONTAINER_NAME}\\s*/\\s*inline-size`),
