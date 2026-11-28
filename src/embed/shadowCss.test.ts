@@ -31,6 +31,23 @@ describe('toShadowCss', () => {
     expect(toShadowCss('')).toMatch(/direction:\s*ltr/);
   });
 
+  it('takes the full width it is given, and the phone width where a theme gives none', () => {
+    const css = toShadowCss('');
+    // A one-column grid: as wide as it is given, and in layouts that size it by its content
+    // at most the 320 px fallback (its max-content width) and at least nothing.
+    expect(css).toMatch(
+      /:host\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)[^}]*width:\s*100%/,
+    );
+    expect(css).toMatch(new RegExp(`\\${root}\\s*\\{[^}]*width:\\s*100%`));
+    expect(css).toMatch(/contain-intrinsic-inline-size:\s*320px/);
+  });
+
+  it('shrinks below the 320 px fallback where a theme leaves less room (padded phone layouts)', () => {
+    const css = toShadowCss('');
+    expect(css).toMatch(/:host\s*\{[^}]*min-width:\s*0[;}]/);
+    expect(css).toMatch(/:host\s*\{[^}]*max-width:\s*100%/);
+  });
+
   it("lays out by the app's own width, not the window's: the app may sit in a narrow column", () => {
     expect(toShadowCss('')).toMatch(
       new RegExp(`container:\\s*${CONTAINER_NAME}\\s*/\\s*inline-size`),
