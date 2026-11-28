@@ -235,6 +235,78 @@ test('takes the full width also in theme layouts that size blocks to their conte
   }
 });
 
+test('fits padded sections on a small phone in every theme layout, without sideways scrolling', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await openShop(page);
+  await expect(page.getByRole('heading', { name: de('templates:title') })).toBeVisible();
+  const host = page.locator('#wine-label-designer');
+
+  // Themes pad their sections, so less than the 320 px fallback is left. The designer must
+  // shrink to the room it gets in every layout, also those that size a block by its content.
+  const layouts = [
+    {
+      name: 'flex column, items at the start',
+      css: 'display:flex;flex-direction:column;align-items:flex-start',
+    },
+    { name: 'flex row, wrapping', css: 'display:flex;flex-direction:row;flex-wrap:wrap' },
+    { name: 'block', css: 'display:block' },
+    {
+      name: 'grid with an auto column',
+      css: 'display:grid;grid-template-columns:auto;justify-content:start',
+    },
+    { name: 'inline-block wrapper', css: 'display:block', wrap: true },
+  ];
+  for (const { name, css, wrap = false } of layouts) {
+    await page.evaluate(
+      ([style, wrapIt]) => {
+        const main = document.querySelector('main');
+        const element = document.querySelector<HTMLElement>('#wine-label-designer');
+        if (!main || !element) return;
+        main.setAttribute('style', `${style ?? ''};padding:0 24px;box-sizing:border-box`);
+        const old = document.querySelector('[data-test-wrapper]');
+        if (old) old.replaceWith(element);
+        if (wrapIt === 'true') {
+          const wrapper = document.createElement('div');
+          wrapper.dataset.testWrapper = '';
+          wrapper.style.display = 'inline-block';
+          main.insertBefore(wrapper, element);
+          wrapper.append(element);
+        }
+      },
+      [css, String(wrap)],
+    );
+    // The section's content box: its width less the padding.
+    const room = await page.locator('main').evaluate((main) => {
+      const box = main.getBoundingClientRect();
+      const style = getComputedStyle(main);
+      return {
+        left: box.left + parseFloat(style.paddingLeft),
+        right: box.right - parseFloat(style.paddingRight),
+      };
+    });
+    const edges = async () => {
+      const box = await host.boundingBox();
+      return { left: box?.x ?? 0, right: (box?.x ?? 0) + (box?.width ?? 0) };
+    };
+    await expect
+      .poll(async () => (await edges()).right, { timeout: 15_000 })
+      .toBeLessThanOrEqual(room.right + 1)
+      .catch(() => undefined);
+    const { left, right } = await edges();
+    expect(right, name).toBeLessThanOrEqual(room.right + 1);
+    expect(right - left, name).toBeGreaterThan(200);
+    expect(
+      await page.evaluate(() => {
+        const root = document.documentElement;
+        return root.scrollWidth - root.clientWidth;
+      }),
+      `${name}: sideways scrolling`,
+    ).toBeLessThanOrEqual(0);
+  }
+});
+
 test('no accessibility problems in the embedded app (WCAG 2.2 A and AA, as a11y.spec.ts)', async ({
   page,
 }) => {
